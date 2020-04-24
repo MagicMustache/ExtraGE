@@ -3,8 +3,7 @@ import {StyleSheet, Text, View, Image, TextInput, TouchableOpacity} from 'react-
 import firebase from "../configs/Firebase"
 import * as Font from "expo-font";
 import {AppLoading} from "expo";
-import Toast from "react-native-simple-toast";
-
+import Toast from "react-native-simple-toast"
 
 let customFonts = {
     "Montserrat": require("../assets/fonts/Montserrat-Regular.ttf"),
@@ -104,18 +103,15 @@ function createAccount(name, surname, email, password, password2) {
                 switch (error.code) {
                     case 'auth/email-already-in-use':
                         console.log("Email address ",email," already in use.");
-                        Toast.show("Erreur: cette adresse Email est déjà utilisée", Toast.LONG)
                         break;
                     case 'auth/invalid-email':
                         console.log("Email address ",email," invalid.");
-                        Toast.show("Erreur: adresse Email invalide", Toast.LONG)
                         break;
                     case 'auth/operation-not-allowed':
                         console.log(`Error during sign up.`);
                         break;
                     case 'auth/weak-password':
                         console.log('Password is not strong enough. Add additional characters including special characters and numbers.');
-                        Toast.show("Erreur: Mot de passe trop faible", Toast.LONG)
                         break;
                     default:
                         console.log(error.message);
@@ -131,7 +127,7 @@ function createAccount(name, surname, email, password, password2) {
         });
     }
     else{
-        Toast.show("NO")
+        //Toast.show("NO")
     }
 
 }

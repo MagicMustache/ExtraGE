@@ -5,11 +5,15 @@ import {createStackNavigator} from '@react-navigation/stack';
 import SignupScreen from "./screens/SignupScreen";
 import SignupWaiter from "./screens/SignupWaiter";
 import LoginScreen from "./screens/LoginScreen";
+import TabWaiter from "./navigation/TabWaiter";
+
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import {createSwitchNavigator } from "react-navigation"
+import Ionicons from "@expo/vector-icons/Ionicons"
 
 const Stack = createStackNavigator();
 
 export default function App() {
-    
   return (
       <NavigationContainer>
         <Stack.Navigator screenOptions={{headerShown: false}}>
@@ -25,7 +29,12 @@ export default function App() {
                 name="LoginScreen"
                 component={LoginScreen}
             />
+            <Stack.Screen
+                name="TabWaiter"
+                component={TabWaiter}
+            />
         </Stack.Navigator>
       </NavigationContainer>
+
   );
 }

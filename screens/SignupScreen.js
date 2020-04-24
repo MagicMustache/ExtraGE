@@ -27,9 +27,23 @@ export default function SignupScreen({navigation}) {
             setLoaded(true);
         });
     });
+    firebase.auth().onAuthStateChanged(function (user) {
+        if(user){
+            console.log("logged in : ", user.email)
+            navigation.reset({
+                index:0,
+                routes: [{name: "TabWaiter"}]
+            })
+        }
+        else{
+            console.log("not logged in")
+        }
+
+    })
     Font.loadAsync(customFonts).then(function (){
         setFontsLoaded(true);
     })
+
 
 
     if (loaded && fontLoaded) {

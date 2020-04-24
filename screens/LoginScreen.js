@@ -3,7 +3,6 @@ import { StyleSheet, Text, View, Image, TouchableOpacity, TextInput } from 'reac
 import firebase from "../configs/Firebase"
 import * as Font from 'expo-font';
 import {AppLoading} from "expo";
-import Toast from "react-native-simple-toast";
 
 let customFonts = {
     "Montserrat": require("../assets/fonts/Montserrat-Regular.ttf"),
@@ -21,7 +20,10 @@ export default function LoginScreen({navigation}) {
     firebase.auth().onAuthStateChanged(function (user) {
         if(user){
             console.log("logged in : ", user.email)
-            navigation.navigate("SignupWaiter")
+            navigation.reset({
+                index:0,
+                routes: [{name: "TabWaiter"}]
+            })
         }
         else{
             console.log("not logged in")
@@ -54,9 +56,7 @@ export default function LoginScreen({navigation}) {
                 <TouchableOpacity style={styles.loginBtn} onPress={()=> login(email, password)}>
                     <Text style={styles.loginText}>LOGIN</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.loginBtn} onPress={()=> signout()}>
-                    <Text style={styles.loginText}>Test Signout</Text>
-                </TouchableOpacity>
+
             </View>
         );
     }
@@ -74,18 +74,12 @@ function login(email, password) {
         let errorCode = error.code;
         let errorMessage = error.message;
         console.log(errorCode, errorMessage);
-        return( Toast.show("Erreur: Email ou Mot de passe incorrect", Toast.LONG));
+        return;
 
     })
 }
 
-function signout() {
-    firebase.auth().signOut().then(function () {
-        console.log("signed out")
-    }).catch(function (error) {
-        console.log(error)
-    })
-}
+
 
 const styles = StyleSheet.create({
     container: {
