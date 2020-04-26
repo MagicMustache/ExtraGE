@@ -4,6 +4,7 @@ import firebase from "../configs/Firebase"
 import * as Font from "expo-font";
 import {AppLoading} from "expo";
 import Toast from "react-native-simple-toast"
+import {Button} from "react-native-web";
 
 let customFonts = {
     "Montserrat": require("../assets/fonts/Montserrat-Regular.ttf"),
@@ -42,6 +43,7 @@ export default function SignupWaiter({navigation}) {
     if(fontLoaded && noUser){
         return(
             <View style={styles.container}>
+                <TouchableOpacity onPress={()=>navigation.goBack()}><Image source={require("../assets/back.png")} style={{}}/></TouchableOpacity>
                 <Text style={styles.logo}>ExtraGE</Text>
                 <View style={styles.inputView} >
                     <TextInput

@@ -34,6 +34,7 @@ export default function LoginScreen({navigation}) {
     if(fontLoaded){
         return(
             <View style={styles.container}>
+                <TouchableOpacity onPress={()=>navigation.goBack()}><Image source={require("../assets/back.png")} style={{}}/></TouchableOpacity>
                 <Text style={styles.logo}>ExtraGE</Text>
                 <View style={styles.inputView} >
                     <TextInput
@@ -53,7 +54,7 @@ export default function LoginScreen({navigation}) {
                 <TouchableOpacity>
                     <Text style={styles.forgot}>Forgot Password?</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.loginBtn} onPress={()=> login(email, password)}>
+                <TouchableOpacity style={styles.loginBtn} onPress={()=> login(email, password, navigation)}>
                     <Text style={styles.loginText}>LOGIN</Text>
                 </TouchableOpacity>
 
@@ -68,13 +69,13 @@ export default function LoginScreen({navigation}) {
 
 }
 
-function login(email, password) {
+function login(email, password, navigation) {
     //TODO login too slow
     firebase.auth().signInWithEmailAndPassword(email, password).catch(function (error) {
         let errorCode = error.code;
         let errorMessage = error.message;
         console.log(errorCode, errorMessage);
-        return;
+
 
     })
 }
