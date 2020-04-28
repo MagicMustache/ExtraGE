@@ -1,9 +1,8 @@
 import React, {useState, useEffect} from 'react';
-import {StyleSheet, Text, View, Image, TextInput, TouchableOpacity} from 'react-native';
+import {StyleSheet, Text, View, Image, TextInput, TouchableOpacity, SafeAreaView} from 'react-native';
 import firebase from "../configs/Firebase"
 import * as Font from "expo-font";
 import {AppLoading} from "expo";
-import Toast from "react-native-simple-toast"
 import {Button} from "react-native-web";
 
 let customFonts = {
@@ -19,7 +18,6 @@ export default function SignupWaiter({navigation}) {
     const [surname, setSurname] = useState("");
     const [name, setName] = useState("");
     const [noUser, setNoUser] = useState(false);
-
     const [fontLoaded, setFontsLoaded] = useState(false);
 
     Font.loadAsync(customFonts).then(function (){
@@ -42,8 +40,7 @@ export default function SignupWaiter({navigation}) {
 
     if(fontLoaded && noUser){
         return(
-            <View style={styles.container}>
-                <TouchableOpacity onPress={()=>navigation.goBack()}><Image source={require("../assets/back.png")} style={{}}/></TouchableOpacity>
+            <SafeAreaView style={styles.container}>
                 <Text style={styles.logo}>ExtraGE</Text>
                 <View style={styles.inputView} >
                     <TextInput
@@ -85,7 +82,12 @@ export default function SignupWaiter({navigation}) {
                 <TouchableOpacity style={styles.loginBtn} onPress={()=>{createAccount(name, surname, email, password, password2)}}>
                     <Text style={styles.loginText}>Créer mon compte</Text>
                 </TouchableOpacity>
-            </View>
+                <View style={{position: "absolute", bottom:50}}>
+                <TouchableOpacity onPress={()=>{navigation.goBack()}}>
+                    <Text style={{fontSize: 15, color: "white", fontFamily: "Montserrat-Bold"}} >Retourner à l'accueil</Text>
+                </TouchableOpacity>
+                </View>
+            </SafeAreaView>
         );
     }
     else{

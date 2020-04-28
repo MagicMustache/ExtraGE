@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity, TextInput } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, TextInput, SafeAreaView } from 'react-native';
 import * as Font from 'expo-font';
 import {AppLoading} from "expo";
 
@@ -16,10 +16,10 @@ export default function WaiterMain({navigation}) {
     })
     if(fontLoaded) {
         return (
-            <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+            <SafeAreaView style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
                 <Text>Jobs!</Text>
 
-            </View>
+            </SafeAreaView>
         );
     }
     else{

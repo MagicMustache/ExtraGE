@@ -1,9 +1,8 @@
 import React, {useState, useEffect} from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity, TextInput, Button, BackHandler, Alert, Platform, ScrollView, RefreshControl, SafeAreaView, FlatList} from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, TextInput, Button, BackHandler, Alert, Platform, ScrollView, RefreshControl, SafeAreaView, FlatList, ToastAndroid} from 'react-native';
 import * as Font from 'expo-font';
 import {AppLoading} from "expo";
 import {useFocusEffect} from "@react-navigation/core";
-import Toast from "react-native-simple-toast"
 import firebase from "../configs/Firebase";
 import Constants from 'expo-constants';
 import NewJobCard from "../components/NewJobCard";
@@ -52,7 +51,7 @@ export default function WaiterMain({navigation}) {
         if(exitApp===false){
             SETexitApp(true);
             if(Platform.OS === "android"){
-                Toast.show("Appuyez de nouveau pour quitter l'app")
+                ToastAndroid.show("appuyez de nouveau pour quitter l'app", ToastAndroid.SHORT)
             }
         }
         else if(exitApp===true){

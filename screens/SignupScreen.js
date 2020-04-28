@@ -1,5 +1,15 @@
 import React, {useState, useEffect} from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
+import {
+    StyleSheet,
+    Text,
+    View,
+    Image,
+    TouchableOpacity,
+    SafeAreaView,
+    Platform,
+    ToastAndroid,
+    BackHandler
+} from 'react-native';
 import firebase from "../configs/Firebase"
 import SignupWaiter from "./SignupWaiter";
 import * as Font from 'expo-font';
@@ -19,6 +29,8 @@ export default function SignupScreen({navigation}) {
     const [fontLoaded, setFontsLoaded] = useState(false);
     const refLeft = firebase.storage().ref("/vieux.png");
     const refRight = firebase.storage().ref("/serveur.png");
+    const [exitApp,SETexitApp]=useState(false)
+
 
     refLeft.getDownloadURL().then(function (result) {
         setUrlLeft(result);
@@ -27,6 +39,32 @@ export default function SignupScreen({navigation}) {
             setLoaded(true);
         });
     });
+
+    const backAction = () => {
+        if(exitApp===false){
+            SETexitApp(true);
+            if(Platform.OS === "android"){
+                ToastAndroid.show("appuyez de nouveau pour quitter l'app", ToastAndroid.SHORT)
+            }
+        }
+        else if(exitApp===true){
+            BackHandler.exitApp()
+        }
+
+        setTimeout(()=>{
+            SETexitApp(false)
+        }, 1500);
+        return true;
+    };
+    useEffect(() =>
+    {
+        const backHandler = BackHandler.addEventListener(
+            "hardwareBackPress",
+            backAction
+        );
+        return () => backHandler.remove();
+    },[exitApp])
+
     firebase.auth().onAuthStateChanged(function (user) {
         if(user){
             console.log("logged in : ", user.email)
@@ -48,6 +86,7 @@ export default function SignupScreen({navigation}) {
 
     if (loaded && fontLoaded) {
         return (
+            <SafeAreaView style={{flex:1, backgroundColor: "#a8323e"}}>
             <View style={{flexDirection: "column", flex: 1}}>
                 <View style={styles.title}>
                     <Text style={styles.title}>Bienvenue sur ExtraGE,</Text>
@@ -82,6 +121,7 @@ export default function SignupScreen({navigation}) {
                     </TouchableOpacity>
                 </View>
             </View>
+            </SafeAreaView>
         );
     } else {
         return (

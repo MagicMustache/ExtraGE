@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity, TextInput } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, TextInput, SafeAreaView } from 'react-native';
 import firebase from "../configs/Firebase"
 import * as Font from 'expo-font';
 import {AppLoading} from "expo";
@@ -33,8 +33,7 @@ export default function LoginScreen({navigation}) {
 
     if(fontLoaded){
         return(
-            <View style={styles.container}>
-                <TouchableOpacity onPress={()=>navigation.goBack()}><Image source={require("../assets/back.png")} style={{}}/></TouchableOpacity>
+            <SafeAreaView style={styles.container}>
                 <Text style={styles.logo}>ExtraGE</Text>
                 <View style={styles.inputView} >
                     <TextInput
@@ -57,8 +56,13 @@ export default function LoginScreen({navigation}) {
                 <TouchableOpacity style={styles.loginBtn} onPress={()=> login(email, password, navigation)}>
                     <Text style={styles.loginText}>LOGIN</Text>
                 </TouchableOpacity>
+                <View style={{position: "absolute", bottom:50}}>
+                    <TouchableOpacity onPress={()=>{navigation.goBack()}}>
+                        <Text style={{fontSize: 15, color: "white", fontFamily: "Montserrat-Bold"}} >Retourner à l'accueil</Text>
+                    </TouchableOpacity>
+                </View>
 
-            </View>
+            </SafeAreaView>
         );
     }
     else{
@@ -75,8 +79,6 @@ function login(email, password, navigation) {
         let errorCode = error.code;
         let errorMessage = error.message;
         console.log(errorCode, errorMessage);
-
-
     })
 }
 
