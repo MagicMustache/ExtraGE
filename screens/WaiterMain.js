@@ -12,34 +12,65 @@ let customFonts = {
     "Montserrat-Bold": require("../assets/fonts/Montserrat-Bold.ttf")
 }
 
-const DATA = [
-    {
-        id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
-        name: 'resto1',
-        address: "rue de la boustifaille, 4",
-        date: "27.04.2020",
-        hourRange: "11h-16h"
-    },
-    {
-        id: '3ac68afc-c605-48d3-a4f8-fbd91aa97f63',
-        name: 'resto2',
-        address: "rue de la boustifaille, 2",
-        date: "26.04.2020",
-        hourRange: "10h-16h"
-    },
-    {
-        id: '58694a0f-3da1-471f-bd96-145571e29d72',
-        name: 'resto3',
-        address: "rue de la boustifaille, 6",
-        date: "25.04.2020",
-        hourRange: "12h-16h"
-    },
-];
+async function fetchData() {
+    let restosRef =  firebase.firestore().collection("restos").orderBy("name");
+    let data = []
+    let promise = new Promise(((resolve, reject) => {
+        restosRef.get().then(function (doc) {
+            doc.forEach(function(doc2) {
+                // doc.data() is never undefined for query doc snapshots
+                data.push(doc2.data())
+            });
+            resolve(data)
+        }).catch((error)=>{
+            console.log(error);
+        })
+    }))
+
+    return await promise;
+}
+
+function wait(timeout) {
+    return new Promise(resolve => {
+        setTimeout(resolve, timeout);
+    });
+}
 
 
 export default function WaiterMain({navigation}) {
     const [fontLoaded, setFontsLoaded] = useState(false);
-    const [exitApp,SETexitApp]=useState(false)
+    const [exitApp,SETexitApp]=useState(false);
+    const [dataRestos, setDataRestos]=useState([])
+    const [refreshing, setRefreshing]=useState(false);
+
+
+    const onRefresh = React.useCallback(() => {
+        setRefreshing(true);
+        wait(2000).then(() => {
+            setRefreshing(false);
+            fetchData().then(res =>{
+                if(res!==dataRestos){
+                    console.log("updating data...")
+                    setDataRestos(res);
+                }
+                else{
+                    console.log("no update needed")
+                }
+            })
+        });
+    }, [refreshing]);
+
+    useEffect(()=>{
+        let restosRef = firebase.firestore().collection("restos").orderBy("name");
+        restosRef.get().then(function (doc) {
+            doc.forEach(function(doc2) {
+                // doc.data() is never undefined for query doc snapshots
+                setDataRestos(dataRestos => [...dataRestos, doc2.data()])
+            });
+        }).catch((error)=>{
+            console.log(error);
+        })
+    },[])
 
 
     Font.loadAsync(customFonts).then(function (){
@@ -74,17 +105,19 @@ export default function WaiterMain({navigation}) {
 
 
 
-    if(fontLoaded) {
+    if(fontLoaded&&dataRestos.length===3) {
         return (
             <SafeAreaView style={styles.container}>
                 <FlatList
-                    data={DATA}
+                    data={dataRestos}
+                    refreshControl={
+                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>
+                    }
                     renderItem={({ item }) => (
                         <NewJobCard
                             data={item}
                         />
                     )}
-                    keyExtractor={item => item.id}
                 />
             </SafeAreaView>
         );

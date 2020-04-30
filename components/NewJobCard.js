@@ -25,7 +25,7 @@ export default function NewJobsCard( data) {
                 <Text>{data.data.name}</Text>
                 <Text>{data.data.address}</Text>
                 <Text>{data.data.date}</Text>
-                <Text>{data.data.hourRange}</Text>
+                <Text>{data.data.length}</Text>
                 </View>
                 </View>
             </TouchableOpacity>
