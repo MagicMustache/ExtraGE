@@ -1,8 +1,9 @@
 import React, {useState, useEffect} from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity, TextInput, SafeAreaView } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, TextInput, SafeAreaView, ActivityIndicator } from 'react-native';
 import firebase from "../configs/Firebase"
 import * as Font from 'expo-font';
 import {AppLoading} from "expo";
+import Loading from "../components/Loading";
 
 let customFonts = {
     "Montserrat": require("../assets/fonts/Montserrat-Regular.ttf"),
@@ -61,7 +62,6 @@ export default function LoginScreen({navigation}) {
                         <Text style={{fontSize: 15, color: "white", fontFamily: "Montserrat-Bold"}} >Retourner à l'accueil</Text>
                     </TouchableOpacity>
                 </View>
-
             </SafeAreaView>
         );
     }
@@ -79,6 +79,7 @@ function login(email, password, navigation) {
         let errorCode = error.code;
         let errorMessage = error.message;
         console.log(errorCode, errorMessage);
+
     })
 }
 
