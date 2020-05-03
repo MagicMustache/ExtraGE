@@ -18,10 +18,23 @@ async function fetchData() {
     let promise = new Promise(((resolve, reject) => {
         restosRef.get().then(function (doc) {
             doc.forEach(function(doc2) {
-                // doc.data() is never undefined for query doc snapshots
-                data.push(doc2.data())
+                let contractRef = firebase.firestore().collection("restos").doc(doc2.id).collection("contract").orderBy("date");
+                contractRef.get().then((sub)=>{
+                    if(sub.size > 0){
+                        console.log("YES");
+                        sub.forEach((subDoc)=>{
+                            let finalData = {...doc2.data(), ...subDoc.data()}
+                            console.log("------------",finalData)
+                            data.push(finalData)
+                        })
+                        resolve(data)
+
+                    }
+                    else{
+                        console.log("NO")
+                    }
+                })
             });
-            resolve(data)
         }).catch((error)=>{
             console.log(error);
         })
@@ -43,14 +56,13 @@ export default function WaiterMain({navigation}) {
     const [dataRestos, setDataRestos]=useState([])
     const [refreshing, setRefreshing]=useState(false);
 
-
     const onRefresh = React.useCallback(() => {
         setRefreshing(true);
         wait(2000).then(() => {
             setRefreshing(false);
             fetchData().then(res =>{
                 if(res!==dataRestos){
-                    console.log("updating data...")
+                    console.log("updating data...", res)
                     setDataRestos(res);
                 }
                 else{
@@ -64,8 +76,20 @@ export default function WaiterMain({navigation}) {
         let restosRef = firebase.firestore().collection("restos").orderBy("name");
         restosRef.get().then(function (doc) {
             doc.forEach(function(doc2) {
-                // doc.data() is never undefined for query doc snapshots
-                setDataRestos(dataRestos => [...dataRestos, doc2.data()])
+                let contractRef = firebase.firestore().collection("restos").doc(doc2.id).collection("contract").orderBy("date");
+                contractRef.get().then((sub)=>{
+                    if(sub.size > 0){
+                        console.log("YES");
+                        sub.forEach((subDoc)=>{
+                            let finalData = {...doc2.data(), ...subDoc.data()}
+                            console.log("+++++++++", finalData);
+                            setDataRestos(dataRestos => [...dataRestos, finalData])
+                        })
+                    }
+                    else{
+                        console.log("NO")
+                    }
+                })
             });
         }).catch((error)=>{
             console.log(error);
@@ -105,9 +129,11 @@ export default function WaiterMain({navigation}) {
 
 
 
-    if(fontLoaded&&dataRestos.length===3) {
+    if(fontLoaded) {
+        console.log(dataRestos)
         return (
             <SafeAreaView style={styles.container}>
+                <Text style={{fontFamily:"Montserrat-Bold", textAlign:"center", margin: 20, fontSize: 20}}>Les jobs disponibles</Text>
                 <FlatList
                     data={dataRestos}
                     refreshControl={
@@ -133,6 +159,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         marginTop: Constants.statusBarHeight*2,
+        justifyContent: "center"
     },
     item: {
         backgroundColor: '#f9c2ff',

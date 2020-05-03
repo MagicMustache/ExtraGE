@@ -19,7 +19,6 @@
     "@react-navigation/native": "^5.1.5",
     "@react-navigation/stack": "^5.2.10",
     "@use-expo/font": "^2.0.0",
-    "exit-on-double-back": "^1.0.1",
     "expo": "~37.0.3",
     "expo-constants": "^9.0.0",
     "expo-font": "^8.1.1",

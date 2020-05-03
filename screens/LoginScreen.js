@@ -3,7 +3,6 @@ import { StyleSheet, Text, View, Image, TouchableOpacity, TextInput, SafeAreaVie
 import firebase from "../configs/Firebase"
 import * as Font from 'expo-font';
 import {AppLoading} from "expo";
-import Loading from "../components/Loading";
 
 let customFonts = {
     "Montserrat": require("../assets/fonts/Montserrat-Regular.ttf"),
@@ -18,19 +17,7 @@ export default function LoginScreen({navigation}) {
     Font.loadAsync(customFonts).then(function (){
         setFontsLoaded(true);
     })
-    firebase.auth().onAuthStateChanged(function (user) {
-        if(user){
-            console.log("logged in : ", user.email)
-            navigation.reset({
-                index:0,
-                routes: [{name: "TabWaiter"}]
-            })
-        }
-        else{
-            console.log("not logged in")
-        }
 
-    })
 
     if(fontLoaded){
         return(
@@ -75,7 +62,7 @@ export default function LoginScreen({navigation}) {
 
 function login(email, password, navigation) {
     //TODO login too slow
-    firebase.auth().signInWithEmailAndPassword(email, password).catch(function (error) {
+    firebase.auth().signInWithEmailAndPassword(email, password).then(()=>{f(navigation)}).catch(function (error) {
         let errorCode = error.code;
         let errorMessage = error.message;
         console.log(errorCode, errorMessage);
@@ -83,6 +70,33 @@ function login(email, password, navigation) {
     })
 }
 
+function f(navigation){
+    firebase.auth().onAuthStateChanged(function (user) {
+        if(user){
+            console.log("logged in : ", user.email)
+            let docRef = firebase.firestore().collection("users").doc(user.email);
+            docRef.get().then(function (doc) {
+                if(doc.exists){
+                    if(doc.data().owner){
+                        console.log("OWNER")
+                    }
+                    else{
+                        console.log("WAITER")
+                        navigation.reset({
+                            index:0,
+                            routes: [{name: "TabWaiter"}]
+                        })
+                    }
+                }
+            })
+
+        }
+        else{
+            console.log("not logged in")
+        }
+
+    })
+}
 
 
 const styles = StyleSheet.create({

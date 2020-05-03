@@ -46,7 +46,7 @@ export default function NewJobsCard( data) {
                 <Text style={styles.text}>{data.data.name}</Text>
                 <Text style={styles.text}>{data.data.address}</Text>
                 <Text style={styles.text}>{data.data.date}</Text>
-                <Text style={styles.text}>{data.data.length}</Text>
+                <Text style={styles.text}>{data.data.beginningHour}h-{data.data.endHour}h</Text>
                 </View>
                 </View>
             </TouchableOpacity>
@@ -64,7 +64,7 @@ export default function NewJobsCard( data) {
                             <Text style={styles.modalText}>{data.data.name}</Text>
                             <Text style={styles.modalText}>{data.data.address}</Text>
                             <Text style={styles.modalText}>{data.data.date}</Text>
-                            <Text style={styles.modalText}>{data.data.length}</Text>
+                            <Text style={styles.modalText}>{data.data.beginningHour}h-{data.data.endHour}h</Text>
 
                             <TouchableHighlight
                                 style={{ ...styles.openButton, backgroundColor: "#06bf21" }}

@@ -6,7 +6,6 @@ import WaiterMain from "../screens/WaiterMain"
 import WaiterJobs from "../screens/WaiterJobs"
 import WaiterProfile from "../screens/WaiterProfile"
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import ExitOnDoubleBack from 'exit-on-double-back';
 import {useState, useEffect} from "react";
 import firebase from "../configs/Firebase";
 import {AppLoading} from "expo";

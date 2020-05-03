@@ -1,5 +1,15 @@
 import React, {useState, useEffect} from 'react';
-import {StyleSheet, Text, View, Image, TextInput, TouchableOpacity, SafeAreaView} from 'react-native';
+import {
+    StyleSheet,
+    Text,
+    View,
+    Image,
+    TextInput,
+    TouchableOpacity,
+    SafeAreaView,
+    Platform,
+    ToastAndroid
+} from 'react-native';
 import firebase from "../configs/Firebase"
 import * as Font from "expo-font";
 import {AppLoading} from "expo";
@@ -124,6 +134,7 @@ function createAccount(name, surname, email, password, password2) {
         firebase.firestore().collection("users").doc(email).set({
             name: name,
             surname: surname,
+            owner: false
         }).then(()=>{
             console.log("user created")
         }).catch(function(error) {
@@ -131,7 +142,9 @@ function createAccount(name, surname, email, password, password2) {
         });
     }
     else{
-        //Toast.show("NO")
+        if(Platform.OS === "android"){
+            ToastAndroid.show("NO", ToastAndroid.SHORT)
+        }
     }
 
 }
