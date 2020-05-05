@@ -18,7 +18,6 @@ import {
 } from 'react-native';
 import * as Font from 'expo-font';
 import {AppLoading} from "expo";
-import Constants from "expo-constants";
 
 
 let customFonts = {
@@ -66,12 +65,12 @@ export default function NewJobsCard( data) {
                             <Text style={styles.modalText}>{data.data.date}</Text>
                             <Text style={styles.modalText}>{data.data.beginningHour}h-{data.data.endHour}h</Text>
 
-                            <TouchableHighlight
+                            <TouchableOpacity
                                 style={{ ...styles.openButton, backgroundColor: "#06bf21" }}
                             >
                                 <Text style={styles.textStyle}>Accepter</Text>
-                            </TouchableHighlight>
-                            <TouchableHighlight
+                            </TouchableOpacity>
+                            <TouchableOpacity
                                 style={{ ...styles.openButton, backgroundColor: "rgba(141,23,22,0.58)", marginTop: 20}}
                                 onPress={() => {
                                     //setModalVisible(!modalVisible);
@@ -79,7 +78,7 @@ export default function NewJobsCard( data) {
                                 }}
                             >
                                 <Text style={styles.textStyle}>Retour</Text>
-                            </TouchableHighlight>
+                            </TouchableOpacity>
                         </View>
                     </View>
                 </Modal>
