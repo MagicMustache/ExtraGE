@@ -16,7 +16,7 @@ const Tab = createMaterialTopTabNavigator();
 export default function TabWaiter({navigation}) {
 
         return(
-            <SafeAreaView style={{flex: 1}}>
+            <SafeAreaView style={{flex: 1, backgroundColor:"white"}}>
             <Tab.Navigator tabBarPosition={"bottom"} initialRouteName={"WaiterMain"} >
                 <Tab.Screen name="WaiterJobs" component={WaiterJobs}/>
                 <Tab.Screen name="WaiterMain" component={WaiterMain}/>

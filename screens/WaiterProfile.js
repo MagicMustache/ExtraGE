@@ -44,25 +44,25 @@ export default function WaiterMain({route, navigation, visible}) {
     },[])
 
     if(user==={}){
-        let currentUser = firebase.auth().currentUser
-        if (currentUser) {
-            setUser(currentUser);
-            console.log(currentUser.email)
-            let docRef = firebase.firestore().collection("users").doc(currentUser.email);
-            docRef.get().then(function (doc) {
-                if(doc.exists){
-                    console.log(doc.data());
-                    setData(doc.data());
-                }
-                else{
-                    console.log("no data")
-                }
-            })
-        }
-        else{
-            console.log("no user");
-        }
+        firebase.auth().onAuthStateChanged(function (user) {
+            if(user){
+                setUser(user);
+                console.log(user.email)
+                let docRef = firebase.firestore().collection("users").doc(user.email);
+                docRef.get().then(function (doc) {
+                    if(doc.exists){
+                        console.log(doc.data());
+                        setData(doc.data());
+                        console.log("+++++++++")
+                    }
+                    else{
+                        console.log("no data2")
+                    }
+                })
+            }
+        })
     }
+
 
     if(fontLoaded&&data&&!modal) {
         return (
