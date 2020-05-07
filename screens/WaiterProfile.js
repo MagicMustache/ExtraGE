@@ -3,6 +3,7 @@ import {StyleSheet, Text, View, Image, TouchableOpacity, TextInput, SafeAreaView
 import * as Font from 'expo-font';
 import {AppLoading} from "expo";
 import firebase from "../configs/Firebase";
+import isEmpty from "react-native-web/dist/vendor/react-native/isEmpty";
 
 let customFonts = {
     "Montserrat": require("../assets/fonts/Montserrat-Regular.ttf"),
@@ -15,7 +16,9 @@ export default function WaiterMain({route, navigation, visible}) {
     const [loaded, setLoaded] = useState(false);
     const [user, setUser] = useState({});
     const [modal, setModal] = useState(false);
+    const [modal2, setModal2] = useState(false);
     const [modalVisible, setModalVisible] = useState(true);
+    const [exp, setExp] = useState([])
 
     Font.loadAsync(customFonts).then(function (){
         setFontsLoaded(true);
@@ -39,11 +42,11 @@ export default function WaiterMain({route, navigation, visible}) {
                 })
             }
             else{
-                console.log("no user");
+                console.log("no user", user);
             }
     },[])
 
-    if(user==={}){
+    if(isEmpty(user)){
         firebase.auth().onAuthStateChanged(function (user) {
             if(user){
                 setUser(user);
@@ -53,18 +56,20 @@ export default function WaiterMain({route, navigation, visible}) {
                     if(doc.exists){
                         console.log(doc.data());
                         setData(doc.data());
-                        console.log("+++++++++")
                     }
                     else{
                         console.log("no data2")
                     }
                 })
             }
+            else{
+                console.log("no user2")
+            }
         })
     }
 
 
-    if(fontLoaded&&data&&!modal) {
+    if(fontLoaded&&data&&!modal&&!modal2) {
         return (
             <SafeAreaView style={{flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor:"#c14752"}}>
                 <View style={styles.header}>
@@ -93,12 +98,12 @@ export default function WaiterMain({route, navigation, visible}) {
 
                     <View style={styles.item}>
                         <View style={styles.iconContent}>
-                            <TouchableOpacity>
+                            <TouchableOpacity onPress={()=>setModal2(true)}>
                             <Image style={styles.icon} source={require("../assets/tools.png")}/>
                             </TouchableOpacity>
                         </View>
                         <View style={styles.infoContent}>
-                            <TouchableOpacity>
+                            <TouchableOpacity onPress={()=>setModal2(true)}>
                             <Text style={styles.info}>Editer le profil</Text>
                             </TouchableOpacity>
                         </View>
@@ -122,7 +127,10 @@ export default function WaiterMain({route, navigation, visible}) {
             </SafeAreaView>
         );
     }
-    else if(modal&&data&&fontLoaded){
+    else if(modal&&data&&fontLoaded&&!modal2){
+        let parts = data.birthdate.split("-");
+        let myDate = new Date(parts[0], parts[1]-1, parts[2]);
+        let age = (Math.abs(new Date(Date.now() - myDate.getTime()).getUTCFullYear()-1970))
         return(
             <SafeAreaView style={{flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor:"#c14752"}}>
                 <View style={styles.header}>
@@ -191,8 +199,8 @@ export default function WaiterMain({route, navigation, visible}) {
                                         resizeMode={"contain"} style={{height: "20%", marginBottom:40}}/>
                                     <Text style={styles.modalText}>{data.name} {data.surname}</Text>
                                     <Text style={styles.modalText}>{user.email}</Text>
-                                    <Text style={styles.modalText}>23 ans</Text>
-                                    <Text style={styles.modalText}>079 xxx xx xx</Text>
+                                    <Text style={styles.modalText}>{age} ans</Text>
+                                    <Text style={styles.modalText}>{data.phone}</Text>
                                     <View
                                         style={{backgroundColor: '#A2A2A2',
                                             height: 2,
@@ -212,6 +220,115 @@ export default function WaiterMain({route, navigation, visible}) {
                                         }}
                                     >
                                         <Text style={styles.textStyle}>Retour</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        </Modal>
+                    </View>
+                </View>
+
+            </SafeAreaView>
+        )
+
+    }
+    else if(!modal&&data&&fontLoaded&&modal2){
+        let parts = data.birthdate.split("-");
+        let myDate = new Date(parts[0], parts[1]-1, parts[2]);
+        let age = (Math.abs(new Date(Date.now() - myDate.getTime()).getUTCFullYear()-1970))
+        return(
+            <SafeAreaView style={{flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor:"#c14752"}}>
+                <View style={styles.header}>
+                    <View style={styles.headerContent}>
+                        <Image style={styles.avatar}
+                               source={require("../assets/social-media.png")}/>
+
+                        <Text style={styles.name}>{data.name} {data.surname}</Text>
+                        <Text style={styles.userInfo}>{user.email}</Text>
+                    </View>
+                </View>
+                <View style={styles.body}>
+                    <View style={styles.item}>
+                        <View style={styles.iconContent}>
+                            <TouchableOpacity onPress={()=>setModal(true)}>
+                                <Image style={styles.icon} source={require("../assets/social.png")}/>
+                            </TouchableOpacity>
+                        </View>
+                        <View style={styles.infoContent}>
+                            <TouchableOpacity>
+                                <Text style={styles.info}>Visualiser le profil</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
+                    <View style={styles.item}>
+                        <View style={styles.iconContent}>
+                            <TouchableOpacity>
+                                <Image style={styles.icon} source={require("../assets/tools.png")}/>
+                            </TouchableOpacity>
+                        </View>
+                        <View style={styles.infoContent}>
+                            <TouchableOpacity>
+                                <Text style={styles.info}>Editer le profil</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
+                    <View style={styles.item}>
+                        <View style={styles.iconContent}>
+                            <TouchableOpacity onPress={()=>signout(navigation)}>
+                                <Image style={styles.icon} source={require("../assets/logout.png")}/>
+                            </TouchableOpacity>
+                        </View>
+                        <View style={styles.infoContent}>
+                            <TouchableOpacity onPress={()=>signout(navigation)}>
+                                <Text style={styles.info}>Se déconnecter</Text>
+                            </TouchableOpacity>
+
+                        </View>
+                    </View>
+                    <View style={styles.centeredView}>
+                        <Modal
+                            animationType="slide"
+                            transparent={true}
+                            visible={modalVisible}
+                            style={{position: "absolute"}}
+                            onRequestClose={() => {
+                                setModalVisible(false)
+                            }}
+                        >
+                            <View style={styles.centeredView}>
+                                <View style={styles.modalView}>
+                                    <Image
+                                        source={require("../assets/social-media.png")}
+                                        resizeMode={"contain"} style={{height: "20%", marginBottom:40}}/>
+                                    <Text style={styles.modalText}>{data.name} {data.surname}</Text>
+                                    <Text style={styles.modalText}>{user.email}</Text>
+                                    <Text style={styles.modalText}>{age} ans</Text>
+                                    <Text style={styles.modalText}>{data.phone}</Text>
+                                    <View
+                                        style={{backgroundColor: '#A2A2A2',
+                                            height: 2,
+                                            width: 165}}>
+                                    </View>
+                                    <Text style={styles.modalText}>{"\n"}Expériences :</Text>
+                                    <Text style={styles.modalText}>2 mois chez XXXXXXXX</Text>
+                                    <Text style={styles.modalText}>4 mois chez YYYYYYYY</Text>
+
+
+
+
+                                    <TouchableOpacity
+                                        style={{...styles.openButton, backgroundColor: "rgba(141,23,22,0.58)", marginTop: 20, position:"absolute", bottom:"8%"}}
+                                        onPress={() => {
+                                            setModal2(false);
+                                        }}
+                                    >
+                                        <Text style={styles.textStyle}>Retour</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={{...styles.openButton, backgroundColor: "rgba(49,179,20,0.58)", marginTop: 20, marginBottom:20, position:"absolute", bottom:"15%"}}
+                                    >
+                                        <Text style={styles.textStyle}>Appliquer</Text>
                                     </TouchableOpacity>
                                 </View>
                             </View>
