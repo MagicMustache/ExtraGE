@@ -29,7 +29,7 @@ let customFonts = {
 
 
 
-export default function NewJobsCard( data) {
+export default function AcceptedJobCard( data) {
     const [fontLoaded, setFontsLoaded] = useState(false);
     const [modal, setModal] = useState(false);
     const [modalVisible, setModalVisible] = useState(true);
@@ -42,15 +42,15 @@ export default function NewJobsCard( data) {
         return(
             <TouchableOpacity onPress={()=>{setModal(true)}}>
                 <View style={{flex:1, alignItems: "center", justifyContent: "center"}}>
-                <View style={styles.card}>
-                <Text style={styles.text}>{data.data.name}</Text>
-                <Text style={styles.text}>{data.data.address}</Text>
-                <Text style={styles.text}>{data.data.date}</Text>
-                <Text style={styles.text}>{data.data.beginningHour}h-{data.data.endHour}h</Text>
-                </View>
+                    <View style={styles.card}>
+                        <Text style={styles.text}>{data.data.name}</Text>
+                        <Text style={styles.text}>{data.data.address}</Text>
+                        <Text style={styles.text}>{data.data.date}</Text>
+                        <Text style={styles.text}>{data.data.beginningHour}h-{data.data.endHour}h</Text>
+                    </View>
                 </View>
             </TouchableOpacity>
-    )}
+        )}
     else if(modal&&fontLoaded){
         return(
             <View style={styles.centeredView}>
@@ -67,12 +67,6 @@ export default function NewJobsCard( data) {
                             <Text style={styles.modalText}>{data.data.beginningHour}h-{data.data.endHour}h</Text>
 
                             <TouchableOpacity
-                                style={{ ...styles.openButton, backgroundColor: "#06bf21" }}
-                                onPress={()=>addResto(data.data)}
-                            >
-                                <Text style={styles.textStyle}>Accepter</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
                                 style={{ ...styles.openButton, backgroundColor: "rgba(141,23,22,0.58)", marginTop: 20}}
                                 onPress={() => {
                                     //setModalVisible(!modalVisible);
@@ -85,7 +79,7 @@ export default function NewJobsCard( data) {
                     </View>
                 </Modal>
             </View>
-    )
+        )
     }
     else {
         return <AppLoading/>
@@ -112,7 +106,7 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems:"center",
         marginBottom: 20,
-        backgroundColor: "rgba(141,23,22,0.58)",
+        backgroundColor: "rgba(10,121,21,0.58)",
         padding: 10,
         borderRadius: 20
     },

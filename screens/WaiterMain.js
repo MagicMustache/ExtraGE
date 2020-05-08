@@ -15,28 +15,36 @@ let customFonts = {
 async function fetchData() {
     let restosRef =  firebase.firestore().collection("restos").orderBy("name");
     let data = []
+    let accepted = [];
+    let i = 0;
     let promise = new Promise(((resolve, reject) => {
-        restosRef.get().then(function (doc) {
-            doc.forEach(function(doc2) {
-                let contractRef = firebase.firestore().collection("restos").doc(doc2.id).collection("contract").orderBy("date");
-                contractRef.get().then((sub)=>{
-                    if(sub.size > 0){
-                        console.log("YES");
-                        sub.forEach((subDoc)=>{
-                            let finalData = {...doc2.data(), ...subDoc.data()}
-                            console.log("------------",finalData)
-                            data.push(finalData)
-                        })
-                        resolve(data)
+        firebase.firestore().collection("users").doc(firebase.auth().currentUser.email).get().then((restId)=> {
+            for (let i = 0; i < restId.data().accepted.length; i++) {
+                accepted.push(restId.data().accepted[i])
+            }
+            restosRef.get().then(function (doc) {
+                doc.forEach(function (doc2) {
+                    let contractRef = firebase.firestore().collection("restos").doc(doc2.id).collection("contract").orderBy("date");
+                    contractRef.get().then((sub) => {
+                        console.log("C : ",i, " ", accepted[i]," D : ", doc2.id);
+                        if (sub.size > 0 && doc2.id!==accepted[i]) {
+                            console.log("YES");
+                            sub.forEach((subDoc) => {
+                                let finalData = {id:doc2.id,...doc2.data(), ...subDoc.data()}
+                                console.log("------------", finalData)
+                                data.push(finalData)
+                            })
+                            resolve(data)
 
-                    }
-                    else{
-                        console.log("NO")
-                    }
-                })
-            });
-        }).catch((error)=>{
-            console.log(error);
+                        } else {
+                            i++
+                            console.log("NO")
+                        }
+                    })
+                });
+            }).catch((error) => {
+                console.log(error);
+            })
         })
     }))
 
@@ -61,7 +69,7 @@ export default function WaiterMain({navigation}) {
         wait(2000).then(() => {
             setRefreshing(false);
             fetchData().then(res =>{
-                if(res!==dataRestos){
+                if(res!=dataRestos){
                     console.log("updating data...", res)
                     setDataRestos(res);
                 }
@@ -74,19 +82,27 @@ export default function WaiterMain({navigation}) {
 
     useEffect(()=>{
         let restosRef = firebase.firestore().collection("restos").orderBy("name");
+        let accepted = [];
+        let i = 0;
+        firebase.firestore().collection("users").doc(firebase.auth().currentUser.email).get().then((restId)=>{
+            for(let i = 0;i<restId.data().accepted.length;i++){
+                accepted.push(restId.data().accepted[i])
+            }
         restosRef.get().then(function (doc) {
             doc.forEach(function(doc2) {
                 let contractRef = firebase.firestore().collection("restos").doc(doc2.id).collection("contract").orderBy("date");
                 contractRef.get().then((sub)=>{
-                    if(sub.size > 0){
+                    console.log("A : ",i, " ", accepted[i]," B : ", doc2.id);
+                    if(sub.size > 0 && doc2.id!==accepted[i]){
                         console.log("YES");
                         sub.forEach((subDoc)=>{
-                            let finalData = {...doc2.data(), ...subDoc.data()}
+                            let finalData = {id:doc2.id, ...doc2.data(), ...subDoc.data()}
                             console.log("+++++++++", finalData);
                             setDataRestos(dataRestos => [...dataRestos, finalData])
                         })
                     }
                     else{
+                        i++;
                         console.log("NO")
                     }
                 })
@@ -94,6 +110,8 @@ export default function WaiterMain({navigation}) {
         }).catch((error)=>{
             console.log(error);
         })
+        })
+
     },[])
 
 
