@@ -1,14 +1,38 @@
 import React, {useState, useEffect} from 'react';
-import {StyleSheet, Text, View, Image, TouchableOpacity, TextInput, SafeAreaView, Modal} from 'react-native';
+import {
+    StyleSheet,
+    Text,
+    View,
+    Image,
+    TouchableOpacity,
+    TextInput,
+    SafeAreaView,
+    Modal,
+    ImageBackground,
+    KeyboardAvoidingView, Platform, ScrollView
+} from 'react-native';
 import * as Font from 'expo-font';
 import {AppLoading} from "expo";
 import firebase from "../configs/Firebase";
 import isEmpty from "react-native-web/dist/vendor/react-native/isEmpty";
+import * as ImagePicker from "expo-image-picker"
+import {getCameraPermissionsAsync} from "expo-image-picker";
+import * as Constants from "expo-constants";
 
 let customFonts = {
     "Montserrat": require("../assets/fonts/Montserrat-Regular.ttf"),
     "Montserrat-Bold": require("../assets/fonts/Montserrat-Bold.ttf")
 }
+async function getPermissions() {
+    if (Constants.platform.ios) {
+        const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
+        if (status !== 'granted') {
+            alert('Sorry, we need camera roll permissions to make this work!');
+        }
+    }
+}
+
+
 
 export default function WaiterMain({route, navigation, visible}) {
     const [fontLoaded, setFontsLoaded] = useState(false);
@@ -18,18 +42,54 @@ export default function WaiterMain({route, navigation, visible}) {
     const [modal, setModal] = useState(false);
     const [modal2, setModal2] = useState(false);
     const [modalVisible, setModalVisible] = useState(true);
-    const [exp, setExp] = useState([])
+    const [image, setImage] = useState(undefined);
+    const [index, setIndex] = useState(0);
 
     Font.loadAsync(customFonts).then(function (){
         setFontsLoaded(true);
     })
 
+    async function pickImage() {
+        try{
+            let result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.All,
+                allowsEditing: true,
+                aspect: [4, 3],
+                quality: 1,
+            });
+            if (!result.cancelled) {
+               upload(result.uri).then(()=>console.log("image uploaded"))
+            }
+
+            console.log(result);
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
+    async function upload(uri){
+        const resp = await fetch(uri);
+        const blob = await resp.blob();
+        let ref = firebase.storage().ref().child(user.email);
+        return ref.put(blob);
+    }
+
+
+
+
     useEffect(()=>{
         setModal(visible);
+
         let currentUser = firebase.auth().currentUser
             if (currentUser) {
+
                 setUser(currentUser);
-                console.log(currentUser.email)
+                getPermissions().then(console.log("permission granted"))
+
+                    console.log(currentUser.email)
+                firebase.storage().ref("/"+currentUser.email).getDownloadURL().then((result)=>{
+                    setImage(result);
+                })
                 let docRef = firebase.firestore().collection("users").doc(currentUser.email);
                 docRef.get().then(function (doc) {
                     if(doc.exists){
@@ -69,13 +129,13 @@ export default function WaiterMain({route, navigation, visible}) {
     }
 
 
-    if(fontLoaded&&data&&!modal&&!modal2) {
+    if(fontLoaded&&data&&!modal&&!modal2&&image!==undefined) {
         return (
             <SafeAreaView style={{flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor:"#c14752"}}>
                 <View style={styles.header}>
                     <View style={styles.headerContent}>
                         <Image style={styles.avatar}
-                               source={require("../assets/social-media.png")}/>
+                               source={{uri:image}}/>
 
                         <Text style={styles.name}>{data.name} {data.surname}</Text>
                         <Text style={styles.userInfo}>{user.email}</Text>
@@ -127,7 +187,13 @@ export default function WaiterMain({route, navigation, visible}) {
             </SafeAreaView>
         );
     }
-    else if(modal&&data&&fontLoaded&&!modal2){
+    else if(modal&&data&&fontLoaded&&!modal2&&image!==undefined){
+
+        let expArray = data.experience.map(info=>(
+
+            <Text style={styles.modalText}>{info.length} mois chez "{info.name}"</Text>
+
+        ))
         let parts = data.birthdate.split("-");
         let myDate = new Date(parts[0], parts[1]-1, parts[2]);
         let age = (Math.abs(new Date(Date.now() - myDate.getTime()).getUTCFullYear()-1970))
@@ -136,7 +202,7 @@ export default function WaiterMain({route, navigation, visible}) {
                 <View style={styles.header}>
                     <View style={styles.headerContent}>
                         <Image style={styles.avatar}
-                               source={require("../assets/social-media.png")}/>
+                               source={{uri:image}}/>
 
                         <Text style={styles.name}>{data.name} {data.surname}</Text>
                         <Text style={styles.userInfo}>{user.email}</Text>
@@ -195,8 +261,8 @@ export default function WaiterMain({route, navigation, visible}) {
                             <View style={styles.centeredView}>
                                 <View style={styles.modalView}>
                                     <Image
-                                        source={require("../assets/social-media.png")}
-                                        resizeMode={"contain"} style={{height: "20%", marginBottom:40}}/>
+                                        source={{uri:image}}
+                                        resizeMode={"contain"} style={{width:"100%",height:"30%", justifyContent:"center",borderRadius:200,marginBottom:20, overflow: "hidden"}}/>
                                     <Text style={styles.modalText}>{data.name} {data.surname}</Text>
                                     <Text style={styles.modalText}>{user.email}</Text>
                                     <Text style={styles.modalText}>{age} ans</Text>
@@ -207,8 +273,7 @@ export default function WaiterMain({route, navigation, visible}) {
                                             width: 165}}>
                                     </View>
                                     <Text style={styles.modalText}>{"\n"}Expériences :</Text>
-                                    <Text style={styles.modalText}>2 mois chez XXXXXXXX</Text>
-                                    <Text style={styles.modalText}>4 mois chez YYYYYYYY</Text>
+                                    {expArray}
 
 
 
@@ -231,7 +296,26 @@ export default function WaiterMain({route, navigation, visible}) {
         )
 
     }
-    else if(!modal&&data&&fontLoaded&&modal2){
+    else if(!modal&&data&&fontLoaded&&modal2&&image!==undefined){
+        let expArray1 = data.experience.map(info=>(
+            <TextInput style={styles.modalText} placeholder={info.length} keyboardType={"number-pad"}/>
+
+
+        ))
+        let expArray2 = data.experience.map(info=>(
+        <Text style={styles.modalText}>mois chez </Text>
+
+    ))
+        let expArray3 = data.experience.map(info=>(
+        <TextInput style={styles.inputText} placeholder={"\""+info.name+"\""}/>
+
+    ))
+        let expEmptyArray = [];
+        console.log("index ", index)
+        for(let i= 0;i<=index;i++){
+            console.log("HERE");
+                expEmptyArray.push(<View style={{flexDirection: "row", width:"100%"}}><TextInput style={styles.modalText} placeholder={"1"} keyboardType={"number-pad"}/><Text style={styles.modalText}>mois chez </Text><TextInput style={styles.inputText} placeholder={"restaurant"}/></View>)
+        }
         let parts = data.birthdate.split("-");
         let myDate = new Date(parts[0], parts[1]-1, parts[2]);
         let age = (Math.abs(new Date(Date.now() - myDate.getTime()).getUTCFullYear()-1970))
@@ -240,7 +324,7 @@ export default function WaiterMain({route, navigation, visible}) {
                 <View style={styles.header}>
                     <View style={styles.headerContent}>
                         <Image style={styles.avatar}
-                               source={require("../assets/social-media.png")}/>
+                               source={{uri:image}}/>
 
                         <Text style={styles.name}>{data.name} {data.surname}</Text>
                         <Text style={styles.userInfo}>{user.email}</Text>
@@ -298,35 +382,45 @@ export default function WaiterMain({route, navigation, visible}) {
                         >
                             <View style={styles.centeredView}>
                                 <View style={styles.modalView}>
-                                    <Image
-                                        source={require("../assets/social-media.png")}
-                                        resizeMode={"contain"} style={{height: "20%", marginBottom:40}}/>
+                                    <ImageBackground
+                                        source={{uri:image}}
+                                        resizeMode={"contain"} style={{width:"100%", justifyContent:"center", marginBottom:20, overflow: "hidden"}} imageStyle={{borderRadius:400}}>
+                                        <TouchableOpacity style={{width:"30%", height:"30%", alignSelf:"flex-end", top:"-30%", left:"-10%"}} onPress={()=>{pickImage()}}>
+                                        <Image source={require("../assets/edit.png")} resizeMode={"contain"} style={{ height:"100%", width:"100%"}}/>
+                                        </TouchableOpacity>
+                                    </ImageBackground>
                                     <Text style={styles.modalText}>{data.name} {data.surname}</Text>
                                     <Text style={styles.modalText}>{user.email}</Text>
                                     <Text style={styles.modalText}>{age} ans</Text>
-                                    <Text style={styles.modalText}>{data.phone}</Text>
+                                    <TextInput style={styles.modalText} placeholder={data.phone} keyboardType={"phone-pad"}/>
                                     <View
                                         style={{backgroundColor: '#A2A2A2',
                                             height: 2,
                                             width: 165}}>
                                     </View>
+                                    <View style={{flexDirection: "row", height:"10%"}}>
                                     <Text style={styles.modalText}>{"\n"}Expériences :</Text>
-                                    <Text style={styles.modalText}>2 mois chez XXXXXXXX</Text>
-                                    <Text style={styles.modalText}>4 mois chez YYYYYYYY</Text>
-
-
-
-
+                                    <TouchableOpacity style={{width:"15%",height:"40%", marginBottom:15, justifyContent:"center", marginTop:20}} onPress={()=>{setIndex(index+1)}}>
+                                    <Image source={require("../assets/add.png")} resizeMode={"contain"} style={{width:"100%"}}/>
+                                    </TouchableOpacity>
+                                    </View>
+                                    <ScrollView>
+                                    <View style={{flexDirection: "row", width:"100%"}}>
+                                        {expArray1}{expArray2}{expArray3}
+                                    </View>
+                                    {expEmptyArray}
+                                    </ScrollView>
                                     <TouchableOpacity
-                                        style={{...styles.openButton, backgroundColor: "rgba(141,23,22,0.58)", marginTop: 20, position:"absolute", bottom:"8%"}}
+                                        style={{...styles.openButton, backgroundColor: "rgba(141,23,22,0.58)", marginTop: 20, position:"absolute", bottom:"5%"}}
                                         onPress={() => {
+                                            setIndex(0)
                                             setModal2(false);
                                         }}
                                     >
                                         <Text style={styles.textStyle}>Retour</Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity
-                                        style={{...styles.openButton, backgroundColor: "rgba(49,179,20,0.58)", marginTop: 20, marginBottom:20, position:"absolute", bottom:"15%"}}
+                                        style={{...styles.openButton, backgroundColor: "rgba(49,179,20,0.58)", marginTop: 20, marginBottom:10, position:"absolute", bottom:"13%"}}
                                     >
                                         <Text style={styles.textStyle}>Appliquer</Text>
                                     </TouchableOpacity>
@@ -374,6 +468,13 @@ const styles = StyleSheet.create({
         borderRadius: 63,
         borderWidth: 4,
         borderColor: "white",
+        marginBottom:10,
+    },
+    avatar2: {
+        width: 200,
+        height: 200,
+        borderWidth: 4,
+        borderColor: "red",
         marginBottom:10,
     },
     name:{
@@ -444,7 +545,7 @@ const styles = StyleSheet.create({
     },
     modalView: {
         width: "80%",
-        height: "90%",
+        height: "95%",
         margin: 20,
         backgroundColor: "white",
         borderRadius: 20,
@@ -457,7 +558,7 @@ const styles = StyleSheet.create({
         },
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
-        elevation: 5
+        elevation: 5,
     },
     openButton: {
         backgroundColor: "#F194FF",
@@ -477,6 +578,14 @@ const styles = StyleSheet.create({
         textAlign: "center",
         fontFamily: "Montserrat",
         fontSize: 20
+
+    },
+    inputText:{
+        marginBottom: 15,
+        textAlign: "center",
+        fontFamily: "Montserrat",
+        fontSize: 20,
+        width:"50%"
 
     }
 });

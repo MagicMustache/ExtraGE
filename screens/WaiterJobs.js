@@ -106,9 +106,14 @@ export default function WaiterMain({navigation}) {
                         if(sub.size > 0 && doc2.id==accepted[i]){
                             console.log("YES");
                             sub.forEach((subDoc)=>{
-                                let finalData = {id:doc2.id, ...doc2.data(), ...subDoc.data()}
-                                console.log("???????????", finalData);
-                                setData(data => [...data, finalData])
+                                let dataDate = subDoc.data().date;
+                                let dateParts = dataDate.split("/");
+                                let finalDate = new Date(+dateParts[2], dateParts[1]-1, +dateParts[0]);
+                                if(finalDate>new Date()){
+                                    let finalData = {id:doc2.id, ...doc2.data(), ...subDoc.data()}
+                                    console.log("???????????", finalData);
+                                    setData(data => [...data, finalData])
+                                }
                             })
                         }
                         else{
@@ -126,7 +131,8 @@ export default function WaiterMain({navigation}) {
     if(fontLoaded) {
         return (
             <SafeAreaView style={styles.container}>
-                <Text style={{fontFamily:"Montserrat-Bold", textAlign:"center", margin: 20, fontSize: 20}}>Les jobs acceptés</Text>
+                <Text style={{fontFamily:"Montserrat-Bold", textAlign:"center", margin: 20, fontSize: 20}}>Les jobs en attente de confirmation</Text>
+                <Text style={{fontFamily:"Montserrat", textAlign:"center", margin: 20, marginTop: 10, fontSize: 15}}>Vous serez contacté par le  restaurateur si votre candidature est acceptée</Text>
                 <FlatList
                     data={data}
                     refreshControl={
