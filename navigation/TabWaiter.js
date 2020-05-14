@@ -17,13 +17,11 @@ export default function TabWaiter({navigation}) {
 
         return(
             <SafeAreaView style={{flex: 1, backgroundColor:"white"}}>
-                <KeyboardAvoidingView behavior={Platform.OS == "ios" ? "padding" : null} style={{flex:1}}>
                 <Tab.Navigator tabBarPosition={"bottom"} initialRouteName={"WaiterMain"} >
-                <Tab.Screen name="WaiterJobs" component={WaiterJobs}/>
-                <Tab.Screen name="WaiterMain" component={WaiterMain}/>
-                <Tab.Screen name="WaiterProfile" component={WaiterProfile}/>
+                <Tab.Screen name="Les jobs acceptés" component={WaiterJobs}/>
+                <Tab.Screen name="Les jobs" component={WaiterMain}/>
+                <Tab.Screen name="Profil" component={WaiterProfile}/>
             </Tab.Navigator>
-                </KeyboardAvoidingView>
             </SafeAreaView>
         )
 }

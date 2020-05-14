@@ -9,7 +9,7 @@ import {
     SafeAreaView,
     Modal,
     ImageBackground,
-    KeyboardAvoidingView, Platform, ScrollView
+    KeyboardAvoidingView, Platform, ScrollView, Dimensions
 } from 'react-native';
 import * as Font from 'expo-font';
 import {AppLoading} from "expo";
@@ -44,7 +44,16 @@ export default function WaiterMain({route, navigation, visible}) {
     const [modalVisible, setModalVisible] = useState(true);
     const [image, setImage] = useState(undefined);
     const [index, setIndex] = useState(0);
+    const [phone, setPhone] = useState("");
+    const [exp, setExp] = useState([]);
+    const [months, setMonths] = useState([]);
+    const [month, setMonth] = useState("");
+    const [restNames, setRestNames] = useState([]);
+    const [restName, setRestName] = useState("");
 
+
+
+    //TODO add modified infos to firebase
     Font.loadAsync(customFonts).then(function (){
         setFontsLoaded(true);
     })
@@ -74,37 +83,48 @@ export default function WaiterMain({route, navigation, visible}) {
         return ref.put(blob);
     }
 
-
-
+    function endEditingMonths() {
+        setMonths(months => [...months, month])
+    }
+    function endEditingNames() {
+        setRestNames(restNames => [...restNames, restName])
+    }
 
     useEffect(()=>{
         setModal(visible);
+        updateData().then(()=>{
+            console.log("data updated...")
+        })
 
-        let currentUser = firebase.auth().currentUser
-            if (currentUser) {
 
-                setUser(currentUser);
-                getPermissions().then(console.log("permission granted"))
-
-                    console.log(currentUser.email)
-                firebase.storage().ref("/"+currentUser.email).getDownloadURL().then((result)=>{
-                    setImage(result);
-                })
-                let docRef = firebase.firestore().collection("users").doc(currentUser.email);
-                docRef.get().then(function (doc) {
-                    if(doc.exists){
-                        console.log(doc.data());
-                        setData(doc.data());
-                    }
-                    else{
-                        console.log("no data")
-                    }
-                })
-            }
-            else{
-                console.log("no user", user);
-            }
     },[])
+
+    async function updateData(){
+        let currentUser = firebase.auth().currentUser
+        if (currentUser) {
+
+            setUser(currentUser);
+            getPermissions().then(console.log("permission granted"))
+
+            console.log(currentUser.email)
+            firebase.storage().ref("/"+currentUser.email).getDownloadURL().then((result)=>{
+                setImage(result);
+            })
+            let docRef = firebase.firestore().collection("users").doc(currentUser.email);
+            docRef.get().then(function (doc) {
+                if(doc.exists){
+                    console.log(doc.data());
+                    setData(doc.data());
+                }
+                else{
+                    console.log("no data")
+                }
+            })
+        }
+        else{
+            console.log("no user", user);
+        }
+    }
 
     if(isEmpty(user)){
         firebase.auth().onAuthStateChanged(function (user) {
@@ -128,8 +148,36 @@ export default function WaiterMain({route, navigation, visible}) {
         })
     }
 
+    function sendData(phone=data.phone, length=[], name=[]){
+        let exp = [];
+        for(let i=0;i<length.length;i++){
+            exp.push({length:length[i], name:name[i]});
+        }
+        exp = data.experience.concat(exp)
+        if(phone === ""){phone=data.phone}
+        //console.log(phone, exp)
+        firebase.firestore().collection("users").doc(user.email).set({
+            phone:phone,
+            experience: exp
+        }, {merge:true}).then(()=>{
+            setModal(false);
+            setModal2(false);
+            console.log("profile data updated...")
+            updateData().then(()=>{
+                console.log("data updated...")
+
+            });
+        })
+    }
+
 
     if(fontLoaded&&data&&!modal&&!modal2&&image!==undefined) {
+        firebase.storage().ref("/"+user.email).getDownloadURL().then((result)=>{
+            if(image!==result){
+                setImage(result);
+
+            }
+        })
         return (
             <SafeAreaView style={{flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor:"#c14752"}}>
                 <View style={styles.header}>
@@ -188,7 +236,11 @@ export default function WaiterMain({route, navigation, visible}) {
         );
     }
     else if(modal&&data&&fontLoaded&&!modal2&&image!==undefined){
-
+        firebase.storage().ref("/"+user.email).getDownloadURL().then((result)=>{
+            if(result !== image){
+                setImage(result);
+            }
+        })
         let expArray = data.experience.map(info=>(
 
             <Text style={styles.modalText}>{info.length} mois chez "{info.name}"</Text>
@@ -260,9 +312,9 @@ export default function WaiterMain({route, navigation, visible}) {
                         >
                             <View style={styles.centeredView}>
                                 <View style={styles.modalView}>
-                                    <Image
+                                    <ImageBackground
                                         source={{uri:image}}
-                                        resizeMode={"contain"} style={{width:"100%",height:"30%", justifyContent:"center",borderRadius:200,marginBottom:20, overflow: "hidden"}}/>
+                                        resizeMode={"contain"} style={{width:"50%", height:"20%", marginBottom:20, alignSelf:"center"}} imageStyle={{width:"100%", height:"100%",borderRadius:70}}/>
                                     <Text style={styles.modalText}>{data.name} {data.surname}</Text>
                                     <Text style={styles.modalText}>{user.email}</Text>
                                     <Text style={styles.modalText}>{age} ans</Text>
@@ -297,25 +349,20 @@ export default function WaiterMain({route, navigation, visible}) {
 
     }
     else if(!modal&&data&&fontLoaded&&modal2&&image!==undefined){
-        let expArray1 = data.experience.map(info=>(
-            <TextInput style={styles.modalText} placeholder={info.length} keyboardType={"number-pad"}/>
+        firebase.storage().ref("/"+user.email).getDownloadURL().then((result)=>{
+            if(image!==result){
+                setImage(result);
+
+            }
+        })
 
 
-        ))
-        let expArray2 = data.experience.map(info=>(
-        <Text style={styles.modalText}>mois chez </Text>
-
-    ))
-        let expArray3 = data.experience.map(info=>(
-        <TextInput style={styles.inputText} placeholder={"\""+info.name+"\""}/>
-
-    ))
         let expEmptyArray = [];
-        console.log("index ", index)
+
         for(let i= 0;i<=index;i++){
-            console.log("HERE");
-                expEmptyArray.push(<View style={{flexDirection: "row", width:"100%"}}><TextInput style={styles.modalText} placeholder={"1"} keyboardType={"number-pad"}/><Text style={styles.modalText}>mois chez </Text><TextInput style={styles.inputText} placeholder={"restaurant"}/></View>)
+                expEmptyArray.push(<View style={{flexDirection: "row", width:"100%"}}><TextInput style={styles.modalText} placeholder={"1"} keyboardType={"number-pad"} onChangeText={(text)=>{setMonth(text)}} onEndEditing={()=>{endEditingMonths()}}/><Text style={styles.modalText}>mois chez </Text><TextInput style={styles.inputText} placeholder={"restaurant"} onChangeText={(text)=>{setRestName(text)}} onEndEditing={()=>{endEditingNames()}}/></View>)
         }
+
         let parts = data.birthdate.split("-");
         let myDate = new Date(parts[0], parts[1]-1, parts[2]);
         let age = (Math.abs(new Date(Date.now() - myDate.getTime()).getUTCFullYear()-1970))
@@ -371,6 +418,7 @@ export default function WaiterMain({route, navigation, visible}) {
                         </View>
                     </View>
                     <View style={styles.centeredView}>
+                        <KeyboardAvoidingView style={{flex:1}}>
                         <Modal
                             animationType="slide"
                             transparent={true}
@@ -384,15 +432,15 @@ export default function WaiterMain({route, navigation, visible}) {
                                 <View style={styles.modalView}>
                                     <ImageBackground
                                         source={{uri:image}}
-                                        resizeMode={"contain"} style={{width:"100%", justifyContent:"center", marginBottom:20, overflow: "hidden"}} imageStyle={{borderRadius:400}}>
-                                        <TouchableOpacity style={{width:"30%", height:"30%", alignSelf:"flex-end", top:"-30%", left:"-10%"}} onPress={()=>{pickImage()}}>
-                                        <Image source={require("../assets/edit.png")} resizeMode={"contain"} style={{ height:"100%", width:"100%"}}/>
+                                        resizeMode={"contain"} style={{width:"50%", height:"20%", marginBottom:20, alignSelf:"center"}} imageStyle={{width:"100%", height:"100%",borderRadius: 100}}>
+                                        <TouchableOpacity style={{width:"30%", height:"30%", alignSelf:"flex-end", right:"-10%"}} onPress={()=>{pickImage()}}>
+                                        <Image source={require("../assets/edit.png")} resizeMode={"contain"} style={{height:"60%", width:"60%"}}/>
                                         </TouchableOpacity>
                                     </ImageBackground>
                                     <Text style={styles.modalText}>{data.name} {data.surname}</Text>
                                     <Text style={styles.modalText}>{user.email}</Text>
                                     <Text style={styles.modalText}>{age} ans</Text>
-                                    <TextInput style={styles.modalText} placeholder={data.phone} keyboardType={"phone-pad"}/>
+                                    <TextInput style={styles.modalText} placeholder={data.phone} keyboardType={"phone-pad"} onChangeText={(text)=>{setPhone(text)}}/>
                                     <View
                                         style={{backgroundColor: '#A2A2A2',
                                             height: 2,
@@ -405,9 +453,7 @@ export default function WaiterMain({route, navigation, visible}) {
                                     </TouchableOpacity>
                                     </View>
                                     <ScrollView>
-                                    <View style={{flexDirection: "row", width:"100%"}}>
-                                        {expArray1}{expArray2}{expArray3}
-                                    </View>
+
                                     {expEmptyArray}
                                     </ScrollView>
                                     <TouchableOpacity
@@ -421,12 +467,14 @@ export default function WaiterMain({route, navigation, visible}) {
                                     </TouchableOpacity>
                                     <TouchableOpacity
                                         style={{...styles.openButton, backgroundColor: "rgba(49,179,20,0.58)", marginTop: 20, marginBottom:10, position:"absolute", bottom:"13%"}}
+                                        onPress={()=>{sendData(phone, months, restNames)}}
                                     >
                                         <Text style={styles.textStyle}>Appliquer</Text>
                                     </TouchableOpacity>
                                 </View>
                             </View>
                         </Modal>
+                        </KeyboardAvoidingView>
                     </View>
                 </View>
 
@@ -451,6 +499,8 @@ function signout(navigation) {
         console.log(error)
     })
 }
+
+
 
 const styles = StyleSheet.create({
     header:{
