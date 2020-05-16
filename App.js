@@ -4,8 +4,12 @@ import {NavigationContainer} from "@react-navigation/native";
 import {createStackNavigator} from '@react-navigation/stack';
 import SignupScreen from "./screens/SignupScreen";
 import SignupWaiter from "./screens/SignupWaiter";
+import SignupOwner from "./screens/SignupOwner";
+import SignupRest from "./screens/SignupRest"
 import LoginScreen from "./screens/LoginScreen";
 import TabWaiter from "./navigation/TabWaiter";
+import TabOwner from "./navigation/TabOwner";
+
 import { YellowBox } from 'react-native';
 import _ from 'lodash';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -33,6 +37,12 @@ export default function App() {
               name="SignupWaiter"
               component={SignupWaiter}
           />
+          <Stack.Screen
+              name="SignupOwner"
+              component={SignupOwner}
+              />
+              <Stack.Screen name={"SignupRest"} component={SignupRest}
+              />
             <Stack.Screen
                 name="LoginScreen"
                 component={LoginScreen}
@@ -40,6 +50,10 @@ export default function App() {
             <Stack.Screen
                 name="TabWaiter"
                 component={TabWaiter}
+            />
+            <Stack.Screen
+                name="TabOwner"
+                component={TabOwner}
             />
         </Stack.Navigator>
       </NavigationContainer>

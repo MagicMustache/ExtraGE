@@ -45,7 +45,7 @@ export default function LoginScreen({navigation}) {
                     <Text style={styles.loginText}>LOGIN</Text>
                 </TouchableOpacity>
                 <View style={{position: "absolute", bottom:50}}>
-                    <TouchableOpacity onPress={()=>{navigation.goBack()}}>
+                    <TouchableOpacity onPress={()=>{navigation.navigate("SignupScreen")}}>
                         <Text style={{fontSize: 15, color: "white", fontFamily: "Montserrat-Bold"}} >Retourner à l'accueil</Text>
                     </TouchableOpacity>
                 </View>
@@ -62,7 +62,7 @@ export default function LoginScreen({navigation}) {
 
 function login(email, password, navigation) {
     //TODO login too slow
-    firebase.auth().signInWithEmailAndPassword(email, password).then(()=>{f(navigation)}).catch(function (error) {
+    firebase.auth().signInWithEmailAndPassword(email, password).then(()=>{nav(navigation)}).catch(function (error) {
         let errorCode = error.code;
         let errorMessage = error.message;
         console.log(errorCode, errorMessage);
@@ -70,7 +70,7 @@ function login(email, password, navigation) {
     })
 }
 
-function f(navigation){
+function nav(navigation){
     firebase.auth().onAuthStateChanged(function (user) {
         if(user){
             console.log("logged in : ", user.email)
@@ -79,6 +79,10 @@ function f(navigation){
                 if(doc.exists){
                     if(doc.data().owner){
                         console.log("OWNER")
+                        navigation.reset({
+                            index:0,
+                            routes: [{name: "TabOwner"}]
+                        })
                     }
                     else{
                         console.log("WAITER")

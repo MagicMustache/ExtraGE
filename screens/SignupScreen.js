@@ -67,11 +67,22 @@ export default function SignupScreen({navigation}) {
 
     firebase.auth().onAuthStateChanged(function (user) {
         if(user){
-            console.log("logged in : ", user.email)
-            navigation.reset({
-                index:0,
-                routes: [{name: "TabWaiter"}]
+            firebase.firestore().collection("users").doc(user.email).get().then((data)=>{
+                if(data.data().owner){
+                    navigation.reset({
+                        index:0,
+                        routes: [{name: "TabOwner"}]
+                    })
+                }
+                else{
+                    navigation.reset({
+                        index:0,
+                        routes: [{name: "TabWaiter"}]
+                    })
+                }
             })
+            console.log("logged in : ", user.email)
+
         }
         else{
             console.log("not logged in")
@@ -95,7 +106,7 @@ export default function SignupScreen({navigation}) {
                 <View style={{flexDirection: "row", flex: 0.8}}>
 
                     <View style={styles.left}>
-                        <TouchableOpacity >
+                        <TouchableOpacity onPress={() => navigation.navigate("SignupOwner")}>
                         <Image source={{uri: urlLeft}} style={styles.imageLeft} resizeMode={"contain"}/>
                         <Text style={{fontSize: 20, fontWeight: "bold", color: "white", paddingBottom: 40, fontFamily: "Montserrat-Bold"}}>
                             Je suis propriétaire
