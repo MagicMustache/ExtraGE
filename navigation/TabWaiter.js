@@ -17,7 +17,7 @@ export default function TabWaiter({navigation}) {
 
         return(
             <SafeAreaView style={{flex: 1, backgroundColor:"white"}}>
-                <Tab.Navigator tabBarPosition={"bottom"} initialRouteName={"WaiterMain"} >
+                <Tab.Navigator tabBarPosition={"bottom"} initialRouteName={"Les jobs"} >
                 <Tab.Screen name="Les jobs acceptés" component={WaiterJobs}/>
                 <Tab.Screen name="Les jobs" component={WaiterMain}/>
                 <Tab.Screen name="Profil" component={WaiterProfile}/>

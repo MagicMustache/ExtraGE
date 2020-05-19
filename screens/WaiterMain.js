@@ -16,7 +16,6 @@ async function fetchData() {
     let restosRef =  firebase.firestore().collection("restos").orderBy("name");
     let data = []
     let accepted = [];
-    let i = 0;
     let promise = new Promise(((resolve, reject) => {
         firebase.firestore().collection("users").doc(firebase.auth().currentUser.email).get().then((restId)=> {
             for (let i = 0; i < restId.data().accepted.length; i++) {
@@ -26,18 +25,23 @@ async function fetchData() {
                 doc.forEach(function (doc2) {
                     let contractRef = firebase.firestore().collection("restos").doc(doc2.id).collection("contract").orderBy("date");
                     contractRef.get().then((sub) => {
-                        console.log("C : ",i, " ", accepted[i]," D : ", doc2.id);
-                        if (sub.size > 0 && doc2.id!==accepted[i]) {
+                        if (sub.size > 0) {
                             console.log("YES");
                             sub.forEach((subDoc) => {
-                                let finalData = {id:doc2.id,...doc2.data(), ...subDoc.data()}
-                                console.log("------------", finalData)
-                                data.push(finalData)
+                                accepted.forEach((acc)=>{
+                                    console.log("C : ", acc," D : ", doc2.id);
+                                    if(subDoc.id!==acc){
+                                        console.log("YES");
+
+                                        let finalData = {id:doc2.id, ...doc2.data(), ...subDoc.data(), id2:subDoc.id}
+                                        console.log("------------", finalData)
+                                        data.push(finalData)
+                                    }
+                                })
                             })
                             resolve(data)
 
                         } else {
-                            i++
                             console.log("NO")
                         }
                     })
@@ -83,7 +87,6 @@ export default function WaiterMain({navigation}) {
     useEffect(()=>{
         let restosRef = firebase.firestore().collection("restos").orderBy("name");
         let accepted = [];
-        let i = 0;
         firebase.firestore().collection("users").doc(firebase.auth().currentUser.email).get().then((restId)=>{
             for(let i = 0;i<restId.data().accepted.length;i++){
                 accepted.push(restId.data().accepted[i])
@@ -92,17 +95,21 @@ export default function WaiterMain({navigation}) {
             doc.forEach(function(doc2) {
                 let contractRef = firebase.firestore().collection("restos").doc(doc2.id).collection("contract").orderBy("date");
                 contractRef.get().then((sub)=>{
-                    console.log("A : ",i, " ", accepted[i]," B : ", doc2.id);
-                    if(sub.size > 0 && doc2.id!==accepted[i]){
-                        console.log("YES");
+                    if(sub.size > 0 ){
                         sub.forEach((subDoc)=>{
-                            let finalData = {id:doc2.id, ...doc2.data(), ...subDoc.data()}
-                            console.log("+++++++++", finalData);
-                            setDataRestos(dataRestos => [...dataRestos, finalData])
+                            accepted.forEach((acc)=>{
+                                console.log("A : ", acc," B : ", subDoc.id);
+                                if(subDoc.id!==acc){
+                                    console.log("YES");
+                                    let finalData = {id:doc2.id, ...doc2.data(), ...subDoc.data(), id2:subDoc.id}
+                                    console.log("+++++++++", finalData);
+                                    setDataRestos(dataRestos => [...dataRestos, finalData])
+                                }
+                            })
+
                         })
                     }
                     else{
-                        i++;
                         console.log("NO")
                     }
                 })
@@ -136,6 +143,7 @@ export default function WaiterMain({navigation}) {
         }, 1500);
         return true;
     };
+
     useEffect(() =>
     {
         const backHandler = BackHandler.addEventListener(
@@ -147,7 +155,7 @@ export default function WaiterMain({navigation}) {
 
 
 
-    if(fontLoaded) {
+    if(fontLoaded&&dataRestos.length>0) {
         console.log(dataRestos)
         return (
             <SafeAreaView style={styles.container}>

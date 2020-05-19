@@ -62,7 +62,28 @@ export default function LoginScreen({navigation}) {
 
 function login(email, password, navigation) {
     //TODO login too slow
-    firebase.auth().signInWithEmailAndPassword(email, password).then(()=>{nav(navigation)}).catch(function (error) {
+    firebase.auth().signInWithEmailAndPassword(email, password).then(()=>{
+        let docRef = firebase.firestore().collection("users").doc(firebase.auth().currentUser.email);
+        docRef.get().then(function (doc) {
+            if(doc.exists){
+                if(doc.data().owner){
+                    console.log("OWNER")
+                    navigation.reset({
+                        index:0,
+                        routes: [{name: "TabOwner"}]
+                    })
+                }
+                else{
+                    console.log("WAITER")
+                    navigation.reset({
+                        index:0,
+                        routes: [{name: "TabWaiter"}]
+                    })
+                }
+            }
+        })
+        //nav(navigation)
+    }).catch(function (error) {
         let errorCode = error.code;
         let errorMessage = error.message;
         console.log(errorCode, errorMessage);

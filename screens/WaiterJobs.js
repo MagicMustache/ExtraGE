@@ -29,7 +29,6 @@ async function fetchData() {
     let restosRef =  firebase.firestore().collection("restos").orderBy("name");
     let data = []
     let accepted = [];
-    let i = 0;
     let promise = new Promise(((resolve, reject) => {
         firebase.firestore().collection("users").doc(firebase.auth().currentUser.email).get().then((restId)=> {
             for (let i = 0; i < restId.data().accepted.length; i++) {
@@ -39,18 +38,27 @@ async function fetchData() {
                 doc.forEach(function (doc2) {
                     let contractRef = firebase.firestore().collection("restos").doc(doc2.id).collection("contract").orderBy("date");
                     contractRef.get().then((sub) => {
-                        console.log("C : ",i, " ", accepted[i]," D : ", doc2.id);
-                        if (sub.size > 0 && doc2.id==accepted[i]) {
+                        if (sub.size > 0) {
                             console.log("YES");
                             sub.forEach((subDoc) => {
-                                let finalData = {id:doc2.id,...doc2.data(), ...subDoc.data()}
-                                console.log("------------", finalData)
-                                data.push(finalData)
+                                accepted.forEach((acc)=>{
+                                    console.log("C : ",acc," D : ", subDoc.id);
+                                    if(subDoc.id===acc){
+                                        let dataDate = subDoc.data().date;
+                                        let dateParts = dataDate.split("/");
+                                        let finalDate = new Date(+dateParts[2], dateParts[1]-1, +dateParts[0]);
+                                        if(finalDate>new Date()){
+                                            let finalData = {id:doc2.id, ...doc2.data(), ...subDoc.data(), id2:subDoc.id}
+                                            console.log("???????????", finalData);
+                                            data.push(finalData)
+                                        }
+                                    }
+                                })
+
                             })
                             resolve(data)
 
                         } else {
-                            i++
                             console.log("NO")
                         }
                     })
@@ -74,14 +82,17 @@ export default function WaiterMain({navigation}) {
         setRefreshing(true);
         wait(2000).then(() => {
             setRefreshing(false);
-            fetchData().then(res =>{
+            fetchData().then((res) =>{
                 if(res!=data){
+                    //TODO res empty
                     console.log("updating data...", res)
                     setData(res);
                 }
                 else{
                     console.log("no update needed")
                 }
+            }).catch((e)=>{
+                console.log(e);
             })
         });
     }, [refreshing]);
@@ -93,7 +104,6 @@ export default function WaiterMain({navigation}) {
     useEffect(()=>{
         let restosRef = firebase.firestore().collection("restos").orderBy("name");
         let accepted = [];
-        let i = 0;
         firebase.firestore().collection("users").doc(firebase.auth().currentUser.email).get().then((restId)=> {
             for (let i = 0; i < restId.data().accepted.length; i++) {
                 accepted.push(restId.data().accepted[i])
@@ -102,22 +112,26 @@ export default function WaiterMain({navigation}) {
                 doc.forEach(function(doc2) {
                     let contractRef = firebase.firestore().collection("restos").doc(doc2.id).collection("contract").orderBy("date");
                     contractRef.get().then((sub)=>{
-                        console.log("A : ",i, " ", accepted[i]," B : ", doc2.id);
-                        if(sub.size > 0 && doc2.id==accepted[i]){
+                        if(sub.size > 0){
                             console.log("YES");
                             sub.forEach((subDoc)=>{
-                                let dataDate = subDoc.data().date;
-                                let dateParts = dataDate.split("/");
-                                let finalDate = new Date(+dateParts[2], dateParts[1]-1, +dateParts[0]);
-                                if(finalDate>new Date()){
-                                    let finalData = {id:doc2.id, ...doc2.data(), ...subDoc.data()}
-                                    console.log("???????????", finalData);
-                                    setData(data => [...data, finalData])
-                                }
+                                accepted.forEach((acc)=>{
+                                    console.log("A : ",acc," B : ", subDoc.id);
+                                    if(subDoc.id===acc) {
+                                        let dataDate = subDoc.data().date;
+                                        let dateParts = dataDate.split("/");
+                                        let finalDate = new Date(+dateParts[2], dateParts[1]-1, +dateParts[0]);
+                                        if(finalDate>new Date()){
+                                            let finalData = {id:doc2.id, ...doc2.data(), ...subDoc.data(), id2:subDoc.id}
+                                            console.log("???????????", finalData);
+                                            setData(data => [...data, finalData])
+                                        }
+                                    }
+                                })
+
                             })
                         }
                         else{
-                            i++;
                             console.log("NO")
                         }
                     })
