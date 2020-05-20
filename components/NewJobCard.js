@@ -46,7 +46,7 @@ export default function NewJobsCard( data) {
                 <Text style={styles.text}>{data.data.name}</Text>
                 <Text style={styles.text}>{data.data.address}</Text>
                 <Text style={styles.text}>{data.data.date}</Text>
-                <Text style={styles.text}>{data.data.beginningHour}-{data.data.endHour}</Text>
+                <Text style={styles.text}>{data.data.beginningHour}h-{data.data.endHour}h</Text>
                 </View>
                 </View>
             </TouchableOpacity>
@@ -97,7 +97,7 @@ function addResto(data) {
     let user = firebase.auth().currentUser;
     if(!isEmpty(user)){
         firebase.firestore().collection("users").doc(user.email).update({
-            accepted: firebase.firestore.FieldValue.arrayUnion(data.id)
+            accepted: firebase.firestore.FieldValue.arrayUnion(data.id2)
         })
     }
     else{

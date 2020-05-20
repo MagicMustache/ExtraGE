@@ -29,24 +29,38 @@ let customFonts = {
 
 
 
-export default function AcceptedJobCard( data) {
+export default function Contract( data) {
     const [fontLoaded, setFontsLoaded] = useState(false);
     const [modal, setModal] = useState(false);
     const [modalVisible, setModalVisible] = useState(true);
+    const [appliants, setAppliants] = useState([]);
+
     Font.loadAsync(customFonts).then(function (){
         setFontsLoaded(true);
     })
-
+    useEffect(()=>{
+        firebase.firestore().collection("users").where("owner","==", false).get().then((res)=>{
+            res.forEach((subdoc)=>{
+                if(subdoc.data().accepted.length>0){
+                    for(let i=0;i<subdoc.data().accepted.length;i++){
+                        if(subdoc.data().accepted[i] === data.data.id){
+                            setAppliants(pData=>[...pData, subdoc.data()])
+                        }
+                    }
+                }
+            })
+        })
+    },[])
 
     if(fontLoaded&&!modal){
+        console.log(appliants);
         return(
             <TouchableOpacity onPress={()=>{setModal(true)}}>
                 <View style={{flex:1, alignItems: "center", justifyContent: "center"}}>
                     <View style={styles.card}>
-                        <Text style={styles.text}>{data.data.name}</Text>
-                        <Text style={styles.text}>{data.data.address}</Text>
-                        <Text style={styles.text}>{data.data.date}</Text>
-                        <Text style={styles.text}>{data.data.beginningHour}-{data.data.endHour}</Text>
+                        <Text style={styles.text}>Contrat{"\n"}</Text>
+                        <Text style={styles.text}>le {data.data.date}</Text>
+                        <Text style={styles.text}>de {data.data.beginningHour} à {data.data.endHour}</Text>
                     </View>
                 </View>
             </TouchableOpacity>
@@ -60,14 +74,11 @@ export default function AcceptedJobCard( data) {
                     visible={modalVisible}>
                     <View style={styles.centeredView}>
                         <View style={styles.modalView}>
-                            <Image source={{uri: "https://cdn.zuerich.com/sites/default/files/styles/sharing/public/web_zuerich_kindli_restaurant_1600x900_8375.jpg?itok=RzgOnZ6F"}} resizeMode={"contain"} style={{width:"100%", height:"50%"}}/>
-                            <Text style={styles.modalText}>{data.data.name}</Text>
-                            <Text style={styles.modalText}>{data.data.address}</Text>
-                            <Text style={styles.modalText}>{data.data.date}</Text>
-                            <Text style={styles.modalText}>{data.data.beginningHour}h-{data.data.endHour}h</Text>
+                            <Text style={{fontFamily:"Montserrat", fontSize:25}}>Les postulants : </Text>
+
 
                             <TouchableOpacity
-                                style={{ ...styles.openButton, backgroundColor: "rgba(141,23,22,0.58)", marginTop: 20}}
+                                style={{ ...styles.openButton, backgroundColor: "rgba(141,23,22,0.58)", position:"absolute", bottom:"10%"}}
                                 onPress={() => {
                                     //setModalVisible(!modalVisible);
                                     setModal(false);
@@ -87,18 +98,6 @@ export default function AcceptedJobCard( data) {
 
 }
 
-function addResto(data) {
-    let user = firebase.auth().currentUser;
-    if(!isEmpty(user)){
-        firebase.firestore().collection("users").doc(user.email).update({
-            accepted: firebase.firestore.FieldValue.arrayUnion(data.id)
-        })
-    }
-    else{
-        console.log("no user in card")
-    }
-
-}
 
 const styles = StyleSheet.create({
     card:{
@@ -106,7 +105,7 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems:"center",
         marginBottom: 20,
-        backgroundColor: "rgba(10,121,21,0.58)",
+        backgroundColor: "rgba(141,23,22,0.58)",
         padding: 10,
         borderRadius: 20
     },

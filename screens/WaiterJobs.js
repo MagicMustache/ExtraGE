@@ -42,11 +42,11 @@ async function fetchData() {
                             console.log("YES");
                             sub.forEach((subDoc) => {
                                 accepted.forEach((acc)=>{
-                                    console.log("C : ",acc," D : ", subDoc.id);
+                                    console.log("C2 : ",acc," D2 : ", subDoc.id);
                                     if(subDoc.id===acc){
                                         let dataDate = subDoc.data().date;
-                                        let dateParts = dataDate.split("/");
-                                        let finalDate = new Date(+dateParts[2], dateParts[1]-1, +dateParts[0]);
+                                        let dateParts = dataDate.split("-");
+                                        let finalDate = new Date(+dateParts[0], dateParts[1]-1, +dateParts[2]);
                                         if(finalDate>new Date()){
                                             let finalData = {id:doc2.id, ...doc2.data(), ...subDoc.data(), id2:subDoc.id}
                                             console.log("???????????", finalData);
@@ -84,7 +84,6 @@ export default function WaiterMain({navigation}) {
             setRefreshing(false);
             fetchData().then((res) =>{
                 if(res!=data){
-                    //TODO res empty
                     console.log("updating data...", res)
                     setData(res);
                 }
@@ -113,27 +112,28 @@ export default function WaiterMain({navigation}) {
                     let contractRef = firebase.firestore().collection("restos").doc(doc2.id).collection("contract").orderBy("date");
                     contractRef.get().then((sub)=>{
                         if(sub.size > 0){
-                            console.log("YES");
                             sub.forEach((subDoc)=>{
                                 accepted.forEach((acc)=>{
-                                    console.log("A : ",acc," B : ", subDoc.id);
+                                    console.log("A2 : ",acc," B2 : ", subDoc.id);
                                     if(subDoc.id===acc) {
+                                        console.log("YES2");
                                         let dataDate = subDoc.data().date;
-                                        let dateParts = dataDate.split("/");
-                                        let finalDate = new Date(+dateParts[2], dateParts[1]-1, +dateParts[0]);
+                                        let dateParts = dataDate.split("-");
+                                        let finalDate = new Date(+dateParts[0], dateParts[1]-1, +dateParts[2]);
                                         if(finalDate>new Date()){
                                             let finalData = {id:doc2.id, ...doc2.data(), ...subDoc.data(), id2:subDoc.id}
                                             console.log("???????????", finalData);
                                             setData(data => [...data, finalData])
                                         }
                                     }
+                                    else {
+                                        console.log("NO2")
+                                    }
                                 })
 
                             })
                         }
-                        else{
-                            console.log("NO")
-                        }
+
                     })
                 });
             }).catch((error)=>{
@@ -157,6 +157,7 @@ export default function WaiterMain({navigation}) {
                             data={item}
                         />
                     )}
+                    keyExtractor={(item, index)=> String(index)}
                 />
             </SafeAreaView>
         );

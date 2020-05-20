@@ -1,5 +1,18 @@
 import React, {useState, useEffect} from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity, TextInput, SafeAreaView, ActivityIndicator, ImageBackground, Modal, TouchableHighlight } from 'react-native';
+import {
+    StyleSheet,
+    Text,
+    View,
+    Image,
+    TouchableOpacity,
+    TextInput,
+    SafeAreaView,
+    ActivityIndicator,
+    ImageBackground,
+    Modal,
+    TouchableHighlight,
+    Platform, ToastAndroid, BackHandler
+} from 'react-native';
 import firebase from "../configs/Firebase"
 import * as Font from 'expo-font';
 import {AppLoading} from "expo";
@@ -22,7 +35,7 @@ export default function OwnerMain({navigation}) {
     const [date, setDate] = useState("");
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
     const [isDatePickerVisible2, setDatePickerVisibility2] = useState(false);
-
+    const [exitApp,SETexitApp]=useState(false);
     const [begHour, setBegHour] = useState("12h");
     const [endHour, setEndHour] = useState("14h");
 
@@ -124,6 +137,33 @@ export default function OwnerMain({navigation}) {
         setDatePickerVisibility2(false);
         setEndHour(date.getHours().toString()+"h"+date.getMinutes().toString())
     };
+
+    const backAction = () => {
+        if(exitApp===false){
+            SETexitApp(true);
+            if(Platform.OS === "android"){
+                ToastAndroid.show("appuyez de nouveau pour quitter l'app", ToastAndroid.SHORT)
+            }
+        }
+        else if(exitApp===true){
+            BackHandler.exitApp()
+        }
+
+        setTimeout(()=>{
+            SETexitApp(false)
+        }, 1500);
+        return true;
+    };
+
+    useEffect(() =>
+    {
+        const backHandler = BackHandler.addEventListener(
+            "hardwareBackPress",
+            backAction
+        );
+        return () => backHandler.remove();
+    },[exitApp])
+
     if(fontLoaded&&ownerData&&restData&&contract!==undefined) {
         return (
             <View style={{flex:1}}>

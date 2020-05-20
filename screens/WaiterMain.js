@@ -6,6 +6,7 @@ import {useFocusEffect} from "@react-navigation/core";
 import firebase from "../configs/Firebase";
 import Constants from 'expo-constants';
 import NewJobCard from "../components/NewJobCard";
+import {acc} from "react-native-reanimated";
 
 let customFonts = {
     "Montserrat": require("../assets/fonts/Montserrat-Regular.ttf"),
@@ -21,26 +22,21 @@ async function fetchData() {
             for (let i = 0; i < restId.data().accepted.length; i++) {
                 accepted.push(restId.data().accepted[i])
             }
+            console.log("accepted : ", accepted)
             restosRef.get().then(function (doc) {
                 doc.forEach(function (doc2) {
                     let contractRef = firebase.firestore().collection("restos").doc(doc2.id).collection("contract").orderBy("date");
                     contractRef.get().then((sub) => {
                         if (sub.size > 0) {
-                            console.log("YES");
                             sub.forEach((subDoc) => {
-                                accepted.forEach((acc)=>{
-                                    console.log("C : ", acc," D : ", doc2.id);
-                                    if(subDoc.id!==acc){
-                                        console.log("YES");
-
-                                        let finalData = {id:doc2.id, ...doc2.data(), ...subDoc.data(), id2:subDoc.id}
-                                        console.log("------------", finalData)
-                                        data.push(finalData)
-                                    }
-                                })
+                                if(!accepted.includes(subDoc.id)){
+                                    console.log("C : ", acc," D : ",subDoc.id," ", subDoc.data());
+                                    let finalData = {id:doc2.id, ...doc2.data(), ...subDoc.data(), id2:subDoc.id}
+                                    console.log("------------", finalData)
+                                    data.push(finalData)
+                                    resolve(data)
+                                }
                             })
-                            resolve(data)
-
                         } else {
                             console.log("NO")
                         }
@@ -76,6 +72,7 @@ export default function WaiterMain({navigation}) {
                 if(res!=dataRestos){
                     console.log("updating data...", res)
                     setDataRestos(res);
+                    console.log("££££££££££££££££££", dataRestos)
                 }
                 else{
                     console.log("no update needed")
@@ -87,6 +84,7 @@ export default function WaiterMain({navigation}) {
     useEffect(()=>{
         let restosRef = firebase.firestore().collection("restos").orderBy("name");
         let accepted = [];
+        let data = [];
         firebase.firestore().collection("users").doc(firebase.auth().currentUser.email).get().then((restId)=>{
             for(let i = 0;i<restId.data().accepted.length;i++){
                 accepted.push(restId.data().accepted[i])
@@ -97,28 +95,28 @@ export default function WaiterMain({navigation}) {
                 contractRef.get().then((sub)=>{
                     if(sub.size > 0 ){
                         sub.forEach((subDoc)=>{
-                            accepted.forEach((acc)=>{
                                 console.log("A : ", acc," B : ", subDoc.id);
-                                if(subDoc.id!==acc){
+                                if(!accepted.includes(subDoc.id)){
                                     console.log("YES");
                                     let finalData = {id:doc2.id, ...doc2.data(), ...subDoc.data(), id2:subDoc.id}
-                                    console.log("+++++++++", finalData);
-                                    setDataRestos(dataRestos => [...dataRestos, finalData])
+                                    data.push(finalData);
+                                    console.log("+++++++++", data);
+                                    setDataRestos(data)
                                 }
-                            })
+                                else{
+                                    console.log("NO")
+                                }
 
                         })
                     }
-                    else{
-                        console.log("NO")
-                    }
+
                 })
+
             });
         }).catch((error)=>{
             console.log(error);
         })
         })
-
     },[])
 
 
@@ -156,7 +154,7 @@ export default function WaiterMain({navigation}) {
 
 
     if(fontLoaded&&dataRestos.length>0) {
-        console.log(dataRestos)
+        console.log("$$$$$$$$$$$$$",dataRestos)
         return (
             <SafeAreaView style={styles.container}>
                 <Text style={{fontFamily:"Montserrat-Bold", textAlign:"center", margin: 20, fontSize: 20}}>Les jobs disponibles</Text>
@@ -170,6 +168,7 @@ export default function WaiterMain({navigation}) {
                             data={item}
                         />
                     )}
+                    keyExtractor={(item, index)=> String(index)}
                 />
             </SafeAreaView>
         );
