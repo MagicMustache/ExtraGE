@@ -14,7 +14,7 @@ import {
     RefreshControl,
     SafeAreaView,
     FlatList,
-    Modal, TouchableHighlight
+    Modal, TouchableHighlight, ImageBackground
 } from 'react-native';
 import * as Font from 'expo-font';
 import {AppLoading} from "expo";
@@ -29,63 +29,81 @@ let customFonts = {
 
 
 
-export default function NewJobsCard( data) {
+export default function AppliantCard( data) {
     const [fontLoaded, setFontsLoaded] = useState(false);
     const [modal, setModal] = useState(false);
     const [modalVisible, setModalVisible] = useState(true);
+    const [appliants, setAppliants] = useState([]);
     const [image, setImage] = useState(undefined)
+
     Font.loadAsync(customFonts).then(function (){
         setFontsLoaded(true);
     })
+    useEffect(()=>{
 
+    },[])
+
+    let parts = data.data.birthdate.split("-");
+    let myDate = new Date(parts[0], parts[1]-1, parts[2]);
+    let age = (Math.abs(new Date(Date.now() - myDate.getTime()).getUTCFullYear()-1970))
 
     if(fontLoaded&&!modal){
+        console.log(appliants);
         return(
             <TouchableOpacity onPress={()=>{setModal(true)}}>
                 <View style={{flex:1, alignItems: "center", justifyContent: "center"}}>
-                <View style={styles.card}>
-                <Text style={styles.text}>{data.data.name}</Text>
-                <Text style={styles.text}>{data.data.address}</Text>
-                <Text style={styles.text}>{data.data.date}</Text>
-                <Text style={styles.text}>{data.data.beginningHour}-{data.data.endHour}</Text>
-                </View>
+                    <View style={styles.card}>
+                        <Text style={styles.text}>{data.data.name} {data.data.surname}{"\n"}</Text>
+                        <Text style={styles.text}>{age} ans</Text>
+                    </View>
                 </View>
             </TouchableOpacity>
-    )}
+        )}
     else if(modal&&fontLoaded){
+        let expArray = data.data.experience.map(info=>(
+
+            <Text style={styles.modalText}>{info.length} mois chez "{info.name}"</Text>
+
+        ))
         firebase.storage().ref("/"+data.data.id).getDownloadURL().then((result)=>{
             if(result !== image){
                 setImage(result);
             }
-        }).catch(()=>{
-            firebase.storage().ref("/placeholder.png").getDownloadURL().then((res)=>{
-                setImage(res);
-            })
         })
         return(
             <View style={styles.centeredView}>
                 <Modal
                     animationType="slide"
                     transparent={true}
-                    visible={modalVisible}>
+                    visible={modalVisible}
+                    style={{position: "absolute"}}
+                    onRequestClose={() => {
+                        setModalVisible(false)
+                    }}
+                >
                     <View style={styles.centeredView}>
                         <View style={styles.modalView}>
-                            <Image source={{uri: image}} resizeMode={"contain"} style={{width:"100%", height:"50%"}}/>
-                            <Text style={styles.modalText}>{data.data.name}</Text>
-                            <Text style={styles.modalText}>{data.data.address}</Text>
-                            <Text style={styles.modalText}>{data.data.date}</Text>
-                            <Text style={styles.modalText}>{data.data.beginningHour}-{data.data.endHour}</Text>
+                            <ImageBackground
+                                source={{uri:image}}
+                                resizeMode={"contain"} style={{width:"50%", height:"20%", marginBottom:20, alignSelf:"center"}} imageStyle={{width:"100%", height:"100%",borderRadius:70}}/>
+                            <Text style={styles.modalText}>{data.data.name} {data.data.surname}</Text>
+                            <Text style={styles.modalText}>{data.data.id}</Text>
+                            <Text style={styles.modalText}>{age} ans</Text>
+                            <Text style={styles.modalText}>{data.data.phone}</Text>
+                            <View
+                                style={{backgroundColor: '#A2A2A2',
+                                    height: 2,
+                                    width: 165}}>
+                            </View>
+                            <Text style={styles.modalText}>{"\n"}Expériences :</Text>
+                            {expArray}
+
+
+
 
                             <TouchableOpacity
-                                style={{ ...styles.openButton, backgroundColor: "#06bf21" }}
-                                onPress={()=>addResto(data.data)}
-                            >
-                                <Text style={styles.textStyle}>Accepter</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={{ ...styles.openButton, backgroundColor: "rgba(141,23,22,0.58)", marginTop: 20}}
+                                style={{...styles.openButton, backgroundColor: "rgba(141,23,22,0.58)", marginTop: 20, position:"absolute", bottom:"10%"}}
                                 onPress={() => {
-                                    //setModalVisible(!modalVisible);
                                     setModal(false);
                                 }}
                             >
@@ -95,7 +113,7 @@ export default function NewJobsCard( data) {
                     </View>
                 </Modal>
             </View>
-    )
+        )
     }
     else {
         return <AppLoading/>
@@ -103,22 +121,10 @@ export default function NewJobsCard( data) {
 
 }
 
-function addResto(data) {
-    let user = firebase.auth().currentUser;
-    if(!isEmpty(user)){
-        firebase.firestore().collection("users").doc(user.email).update({
-            accepted: firebase.firestore.FieldValue.arrayUnion(data.id2)
-        })
-    }
-    else{
-        console.log("no user in card")
-    }
-
-}
 
 const styles = StyleSheet.create({
     card:{
-        width:"75%",
+        width:"70%",
         justifyContent: "center",
         alignItems:"center",
         marginBottom: 20,

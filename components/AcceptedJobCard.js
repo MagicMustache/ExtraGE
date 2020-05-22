@@ -33,6 +33,8 @@ export default function AcceptedJobCard( data) {
     const [fontLoaded, setFontsLoaded] = useState(false);
     const [modal, setModal] = useState(false);
     const [modalVisible, setModalVisible] = useState(true);
+    const [image, setImage] = useState(undefined)
+
     Font.loadAsync(customFonts).then(function (){
         setFontsLoaded(true);
     })
@@ -52,6 +54,15 @@ export default function AcceptedJobCard( data) {
             </TouchableOpacity>
         )}
     else if(modal&&fontLoaded){
+        firebase.storage().ref("/"+data.data.id).getDownloadURL().then((result)=>{
+            if(result !== image){
+                setImage(result);
+            }
+        }).catch(()=>{
+            firebase.storage().ref("/placeholder.png").getDownloadURL().then((res)=>{
+                setImage(res);
+            })
+        })
         return(
             <View style={styles.centeredView}>
                 <Modal
@@ -60,11 +71,11 @@ export default function AcceptedJobCard( data) {
                     visible={modalVisible}>
                     <View style={styles.centeredView}>
                         <View style={styles.modalView}>
-                            <Image source={{uri: "https://cdn.zuerich.com/sites/default/files/styles/sharing/public/web_zuerich_kindli_restaurant_1600x900_8375.jpg?itok=RzgOnZ6F"}} resizeMode={"contain"} style={{width:"100%", height:"50%"}}/>
+                            <Image source={{uri: image}} resizeMode={"contain"} style={{width:"100%", height:"50%"}}/>
                             <Text style={styles.modalText}>{data.data.name}</Text>
                             <Text style={styles.modalText}>{data.data.address}</Text>
                             <Text style={styles.modalText}>{data.data.date}</Text>
-                            <Text style={styles.modalText}>{data.data.beginningHour}h-{data.data.endHour}h</Text>
+                            <Text style={styles.modalText}>{data.data.beginningHour}-{data.data.endHour}</Text>
 
                             <TouchableOpacity
                                 style={{ ...styles.openButton, backgroundColor: "rgba(141,23,22,0.58)", marginTop: 20}}

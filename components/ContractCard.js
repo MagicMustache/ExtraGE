@@ -20,6 +20,7 @@ import * as Font from 'expo-font';
 import {AppLoading} from "expo";
 import firebase from "../configs/Firebase";
 import isEmpty from "react-native-web/dist/vendor/react-native/isEmpty";
+import AppliantCard from "./AppliantCard";
 
 
 let customFonts = {
@@ -27,13 +28,18 @@ let customFonts = {
     "Montserrat-Bold": require("../assets/fonts/Montserrat-Bold.ttf")
 }
 
-
+function wait(timeout) {
+    return new Promise(resolve => {
+        setTimeout(resolve, timeout);
+    });
+}
 
 export default function Contract( data) {
     const [fontLoaded, setFontsLoaded] = useState(false);
     const [modal, setModal] = useState(false);
     const [modalVisible, setModalVisible] = useState(true);
     const [appliants, setAppliants] = useState([]);
+    const [refreshing, setRefreshing]=useState(false);
 
     Font.loadAsync(customFonts).then(function (){
         setFontsLoaded(true);
@@ -44,7 +50,8 @@ export default function Contract( data) {
                 if(subdoc.data().accepted.length>0){
                     for(let i=0;i<subdoc.data().accepted.length;i++){
                         if(subdoc.data().accepted[i] === data.data.id){
-                            setAppliants(pData=>[...pData, subdoc.data()])
+                            let finalData = {id:subdoc.id, ...subdoc.data()}
+                            setAppliants(pData=>[...pData, finalData])
                         }
                     }
                 }
@@ -52,14 +59,31 @@ export default function Contract( data) {
         })
     },[])
 
+    const onRefresh = React.useCallback(() => {
+        setRefreshing(true);
+        wait(2000).then(() => {
+            setRefreshing(false);
+            fetchData().then(res =>{
+                if(res!==appliants){
+                    console.log("updating data...", res)
+                    setAppliants(res);
+                }
+                else{
+                    console.log("no update needed")
+                }
+            })
+        });
+    }, [refreshing]);
+
+
     if(fontLoaded&&!modal){
-        console.log(appliants);
+        console.log("appliants ",appliants);
         return(
             <TouchableOpacity onPress={()=>{setModal(true)}}>
                 <View style={{flex:1, alignItems: "center", justifyContent: "center"}}>
                     <View style={styles.card}>
-                        <Text style={styles.text}>Contrat{"\n"}</Text>
-                        <Text style={styles.text}>le {data.data.date}</Text>
+                        <Text style={styles.text}>Votre contrat</Text>
+                        <Text style={styles.text}>du {data.data.date}</Text>
                         <Text style={styles.text}>de {data.data.beginningHour} à {data.data.endHour}</Text>
                     </View>
                 </View>
@@ -74,8 +98,18 @@ export default function Contract( data) {
                     visible={modalVisible}>
                     <View style={styles.centeredView}>
                         <View style={styles.modalView}>
-                            <Text style={{fontFamily:"Montserrat", fontSize:25}}>Les postulants : </Text>
-
+                            <Text style={{fontFamily:"Montserrat", fontSize:25}}>Les postulants : {"\n\n"}</Text>
+                            <View style={{width:"100%"}}>
+                            <FlatList
+                                data={appliants}
+                                refreshControl={
+                                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>
+                                }
+                                renderItem={({ item }) => (
+                                    <AppliantCard data={item}/>
+                                )}
+                            />
+                            </View>
 
                             <TouchableOpacity
                                 style={{ ...styles.openButton, backgroundColor: "rgba(141,23,22,0.58)", position:"absolute", bottom:"10%"}}
@@ -101,7 +135,7 @@ export default function Contract( data) {
 
 const styles = StyleSheet.create({
     card:{
-        width:"75%",
+        width:"65%",
         justifyContent: "center",
         alignItems:"center",
         marginBottom: 20,
@@ -111,6 +145,7 @@ const styles = StyleSheet.create({
     },
     text:{
         fontFamily: "Montserrat",
+        marginTop: 10
 
     },
     centeredView: {

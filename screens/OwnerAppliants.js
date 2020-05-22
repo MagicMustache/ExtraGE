@@ -60,6 +60,7 @@ export default function OwnerAppliants() {
                 setContracts(pData=>[...pData, data])
             })
             setContractsLoaded(true);
+
         })
     },[])
 
