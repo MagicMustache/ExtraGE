@@ -19,6 +19,7 @@ import {AppLoading} from "expo";
 import * as ImagePicker from "expo-image-picker";
 import DatePicker from 'react-native-datepicker'
 import DateTimePickerModal from "react-native-modal-datetime-picker";
+import {Constants} from "expo/build/globals.web";
 
 let customFonts = {
     "Montserrat": require("../assets/fonts/Montserrat-Regular.ttf"),
@@ -166,7 +167,7 @@ export default function OwnerMain({navigation}) {
 
     if(fontLoaded&&ownerData&&restData&&contract!==undefined) {
         return (
-            <View style={{flex:1}}>
+            <SafeAreaView style={{flex:1}}>
                 <Modal
                 animationType={"slide"}
                 transparent={true}
@@ -265,16 +266,13 @@ export default function OwnerMain({navigation}) {
                     <Text style={{fontFamily:"Montserrat", marginTop:"10%", fontSize:15, marginLeft:"15%"}}>Téléphone : {restData.phone}</Text>
                     {contract}
                     <TouchableOpacity style={styles.button} onPress={()=>setModalVisible(true)}>
-                        <Text>Créer un contrat</Text>
+                        <Text style={{fontFamily:"Montserrat"}}>Créer un contrat</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.button} onPress={()=>signout(navigation)}>
-                        <Text>Se déconnecter</Text>
+                    <TouchableOpacity style={styles.button2} onPress={()=>signout(navigation)}>
+                        <Text style={{fontFamily:"Montserrat"}}>Se déconnecter</Text>
                     </TouchableOpacity>
                 </View>
-                <View style={{}}>
-
-                </View>
-            </View>
+            </SafeAreaView>
         )
     }
     else {
@@ -311,12 +309,23 @@ const styles = StyleSheet.create({
         width:"60%",
         backgroundColor:"rgba(169,39,39,0.66)",
         borderRadius:25,
-        height:50,
+        height:"10%",
         alignItems:"center",
         justifyContent:"center",
         marginTop:30,
         fontFamily: "Montserrat-Bold",
-        alignSelf:"center"
+        alignSelf:"center",
+    },
+    button2:{
+        width:"60%",
+        backgroundColor:"rgba(169,39,39,0.66)",
+        borderRadius:25,
+        height:"10%",
+        alignItems:"center",
+        justifyContent:"center",
+        marginTop:30,
+        fontFamily: "Montserrat-Bold",
+        alignSelf:"center",
     },
     buttonModal:{
         width:"60%",

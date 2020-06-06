@@ -32,7 +32,6 @@ async function fetchData() {
                                 if(!accepted.includes(subDoc.id)){
                                     console.log("C : ", acc," D : ",subDoc.id," ", subDoc.data());
                                     let finalData = {id:doc2.id, ...doc2.data(), ...subDoc.data(), id2:subDoc.id}
-                                    console.log("------------", finalData)
                                     data.push(finalData)
                                     resolve(data)
                                 }
@@ -72,7 +71,6 @@ export default function WaiterMain({navigation}) {
                 if(res!=dataRestos){
                     console.log("updating data...", res)
                     setDataRestos(res);
-                    console.log("££££££££££££££££££", dataRestos)
                 }
                 else{
                     console.log("no update needed")
@@ -100,7 +98,6 @@ export default function WaiterMain({navigation}) {
                                     console.log("YES");
                                     let finalData = {id:doc2.id, ...doc2.data(), ...subDoc.data(), id2:subDoc.id}
                                     data.push(finalData);
-                                    console.log("+++++++++", data);
                                     setDataRestos(data)
                                 }
                                 else{

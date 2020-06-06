@@ -95,8 +95,6 @@ export default function WaiterMain({route, navigation, visible}) {
         updateData().then(()=>{
             console.log("data updated...")
         })
-
-
     },[])
 
     async function updateData(){
@@ -109,6 +107,11 @@ export default function WaiterMain({route, navigation, visible}) {
             console.log(currentUser.email)
             firebase.storage().ref("/"+currentUser.email).getDownloadURL().then((result)=>{
                 setImage(result);
+            }).catch((e)=>{
+                console.log(e);
+                firebase.storage().ref("/placeholder.png").getDownloadURL().then((result2)=>{
+                    setImage(result2)
+                })
             })
             let docRef = firebase.firestore().collection("users").doc(currentUser.email);
             docRef.get().then(function (doc) {
@@ -153,9 +156,11 @@ export default function WaiterMain({route, navigation, visible}) {
         for(let i=0;i<length.length;i++){
             exp.push({length:length[i], name:name[i]});
         }
-        exp = data.experience.concat(exp)
+        console.log("yayayaya ", exp, restNames)
+        if(data.experience){
+            exp = data.experience.concat(exp)
+        }
         if(phone === ""){phone=data.phone}
-        //console.log(phone, exp)
         firebase.firestore().collection("users").doc(user.email).set({
             phone:phone,
             experience: exp
@@ -241,11 +246,18 @@ export default function WaiterMain({route, navigation, visible}) {
                 setImage(result);
             }
         })
-        let expArray = data.experience.map(info=>(
+        let expArray;
+        console.log("exp", data.experience)
+        if(data.experience){
+            expArray = data.experience.map(info=>(
 
-            <Text style={styles.modalText}>{info.length} mois chez "{info.name}"</Text>
+                <Text style={styles.modalText}>{info.length} mois chez "{info.name}"</Text>
 
-        ))
+            ))
+        }
+    else{
+        expArray=(<Text style={styles.modalText}>aucune experience</Text>)
+        }
         let parts = data.birthdate.split("-");
         let myDate = new Date(parts[0], parts[1]-1, parts[2]);
         let age = (Math.abs(new Date(Date.now() - myDate.getTime()).getUTCFullYear()-1970))

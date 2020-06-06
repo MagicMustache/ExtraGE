@@ -174,7 +174,8 @@ function createAccount(name, surname, email, password, password2, date, phone) {
             surname: surname,
             owner: false,
             birthdate: date,
-            phone: phone
+            phone: phone,
+            accepted: []
         }).then(()=>{
             console.log("user created")
         }).catch(function(error) {
